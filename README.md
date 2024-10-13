@@ -31,6 +31,8 @@
 
 :small_blue_diamond: [Instalação das Dependências](#instalação-das-dependências-arrow_down_small)
 
+:small_blue_diamond: [Iniciação e migration Database](#Iniciação-e-migration-Database-file_folder)
+
 :small_blue_diamond: [Executar App](#executar-app-arrow_forward)
 
 ...
@@ -153,10 +155,17 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
    - DELETE /reviews/{id}: Deleta uma avaliação por ID.
 
 
-## Instação das depedências :arrow_down_small:
+## Instalação das depedências :arrow_down_small:
 
 ```bash
 $ pip install -r requirements.txt
+
+```
+
+
+## Iniciação e migration Database :file_folder:
+
+```bash
 $ flask db init
 $ flask db migrate -m "Initial migration"
 $ flask db upgrade
