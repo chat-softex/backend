@@ -29,7 +29,7 @@
 
 :small_blue_diamond: [Rotas - EndPoints](#rotas---endpoints-arrows_clockwise) :x:
 
-:small_blue_diamond: [Instalação das Dependências](#instalação-das-dependências-arrow_down_small)
+:small_blue_diamond: [Instalação das Dependências](#Instalação-das-dependências-arrow_down_small)
 
 :small_blue_diamond: [Iniciação e migration Database](#Iniciação-e-migration-Database-file_folder)
 
