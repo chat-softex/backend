@@ -14,7 +14,11 @@ def create_app():
     # init_cors(app)
 
     # from app.routes.usuario_routes import usuario_routes
+    # from app.routes.projeto_routes import projeto_routes
+    # from app.routes.avaliacao_routes import avaliacao_routes
     # app.register_blueprint(usuario_routes)
+    # app.register_blueprint(projeto_routes)
+    # app.register_blueprint(avaliacao_routes)
 
     return app
 
