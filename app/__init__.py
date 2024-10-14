@@ -1,17 +1,26 @@
 from flask import Flask
-# from flask_sqlalchemy import SQLAlchemy
-# from flask_migrate import Migrate
-# from app.config.config import Config
-# from app.middlewares.cors_middleware import init_cors
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from app.config.config import Config
 
-# db = SQLAlchemy()
+from app.middlewares.cors_middleware import init_cors
+
+db = SQLAlchemy()
+migrate = Migrate()  
 
 def create_app():
     app = Flask(__name__)
-    # app.config.from_object(Config)
-    # db.init_app(app)
-    # migrate = Migrate(app, db)
-    # init_cors(app)
+    app.config.from_object(Config)
+
+    db.init_app(app)
+    migrate.init_app(app, db)
+
+    init_cors(app)
+
+
+    from app.models.usuario_model import Usuario # importa model Usuario
+    # importar model Avaliacao
+    # importar model Projeto
 
     # from app.routes.usuario_routes import usuario_routes
     # from app.routes.projeto_routes import projeto_routes
