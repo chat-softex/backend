@@ -18,7 +18,7 @@ def create_app():
     init_cors(app)
 
 
-    from app.models.usuario_model import Usuario # importar model Usuario
+    from app.models.usuario_model import Usuario
     from app.models.empresa_model import Empresa
     from app.models.projeto_model import Projeto
     from app.models.avaliacao_model import Avaliacao
