@@ -27,6 +27,9 @@ class Projeto(db.Model):
     
     empresa = relationship('Empresa', back_populates='projetos')
 
+    # Relacionamento Um-para-Um com Avaliacao
+    avaliacao = relationship('Avaliacao', back_populates='projeto', uselist=False)
+
     
     #  não existe "__table_args__ = (CheckConstraint("tipo IN ('Avaliador', 'Administrador')", name='check_tipo'),)"". A tabela projetos não tem a coluna tipo. A coluna correta é status. E não existe 'Avaliador', 'Administrador' em status. Em status é 'Em avaliação', 'Aprovado', 'Reprovado'.
     __table_args__ = (
