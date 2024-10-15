@@ -46,6 +46,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 │   ├── __init__.py                     # Inicialização do app Flask e configuração do SQLAlchemy 
 |   |
 │   ├── models/                         # Definições das tabelas - Modelos do SQLAlchemy (ORM)
+|   |   ├── empresa_model.py            # Modelo para empresas
 │   │   ├── projeto_model.py            # Modelo para projetos
 │   │   ├── usuario_model.py            # Modelo para usuários
 │   │   └── avaliacao_model.py          # Modelo para avaliações
