@@ -13,7 +13,7 @@ from sqlalchemy import CheckConstraint
 # Biblioteca padrão de Python para gerar UUIDs, usados como identificadores únicos.
 import uuid
 
-# Utilizado para gerar a data e hora atual no momento de cadastro dos usuários.
+# Utilizado para gerar a data e hora atual de forma automatica pelo BD no momento de cadastro dos usuários.
 from sqlalchemy.sql import func
 
 
@@ -37,13 +37,14 @@ class Usuario(db.Model):
     # Coluna que define o tipo do usuário (ex: Avaliador ou Administrador). O valor é obrigatório (nullable=False).
     tipo = db.Column(db.Enum('Avaliador', 'Administrador', name='usuario_tipo'), nullable=False)
 
-    # Coluna que armazena a data e hora do cadastro do usuário. O valor padrão é a data e hora atual (server_default=func.now()).
+    # Coluna que armazena a data e hora do cadastro do usuário. O valor padrão é a data e hora (TIMESTAMP) atual aplicado pelo servidor de banco de dados quando um novo registro for inserido (server_default=func.now()).
     data_cadastro = db.Column(db.TIMESTAMP, server_default=func.now())
 
-    # Relacionamento com Projetos (Um-para-Muitos)
+
+    # Relacionamento com Projetos (Um-para-Muitos). back_populates: estabelece uma relação bidirecional entre duas classes. Quando você usa back_populates, significa que o relacionamento é mantido de ambos os lados. Ou seja, você pode acessar os projetos de uma empresa e também pode acessar a empresa de cada projeto
     projetos = relationship('Projeto', back_populates='avaliador')
 
-    # Define uma restrição na coluna tipo, garantindo que o valor só pode ser "Avaliador" ou "Administrador". Essa restrição garante integridade nos dados armazenados.
+    # Define uma restrição na coluna tipo, garantindo que o valor só pode ser "Avaliador" ou "Administrador". Essa restrição garante integridade nos dados armazenados nos valores na coluna tipo da tabela usuarios.
     __table_args__ = (
         CheckConstraint("tipo IN ('Avaliador', 'Administrador')", name='check_tipo'),
     )
