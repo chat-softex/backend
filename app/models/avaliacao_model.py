@@ -16,7 +16,7 @@ class Avaliacao(db.Model):
     feedback_qualitativo = db.Column(db.Text, nullable=False)  # Feedback gerado pela IA
 
     # Relacionamento com Projeto (Um-para-Um)
-    avaliacao = relationship('Avaliacao', back_populates='projeto', uselist=False) #usar back_populates para ter maior controle dos relacionamentos entre as tabelas
+    projeto = relationship('Projeto', back_populates='avaliacao', uselist=False) # O relacionamento estava sendo definido incorretamente. O campo avaliacao = relationship('Avaliacao', back_populates='projeto', uselist=False) deveria ser o relacionamento com Projeto e não consigo mesmo. Usar back_populates para ter maior controle dos relacionamentos entre as tabelas
     
 
     def __init__(self, projeto_id, feedback_qualitativo):
