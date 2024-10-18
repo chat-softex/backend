@@ -1,3 +1,4 @@
+# app/models/usuario_model.py:
 # Importa a instância do banco de dados da aplicação (configurada em app/__init__.py).
 from app import db
 
