@@ -39,6 +39,13 @@
 
 ## Arquitetura do Backend :triangular_ruler: :straight_ruler:
 
+**Diagrama:**
+
+<img src="diagrama_arquitetura_software_gestao_projetos_inovacao.drawio.png">
+
+... 
+
+
 ```plaintext
 sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 │
@@ -96,7 +103,6 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 |   
 └── README.md                           # Documentação
 ```
-
 
 **Descrição:** :x:
 
