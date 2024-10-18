@@ -41,7 +41,7 @@
 
 **Diagrama:**
 
-<img src="(/../../.github/profile/diagrama_arquitetura_software_gestao_projetos_inovacao.png)">
+<img src="(/../.github/profile/diagrama_arquitetura_software_gestao_projetos_inovacao.png)">
 
 ... 
 
