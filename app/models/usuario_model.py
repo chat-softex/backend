@@ -36,7 +36,7 @@ class Usuario(db.Model):
     senha = db.Column(db.String(255), nullable=False)
 
     # Coluna que define o tipo do usuário (ex: Avaliador ou Administrador). O valor é obrigatório (nullable=False).
-    tipo = db.Column(db.Enum('Avaliador', 'Administrador', name='usuario_tipo'), nullable=False)
+    tipo = db.Column(db.Enum('avaliador', 'administrador', name='usuario_tipo'), nullable=False)
 
     # Coluna que armazena a data e hora do cadastro do usuário. O valor padrão é a data e hora atual (server_default=func.now()).
     data_cadastro = db.Column(db.TIMESTAMP, server_default=func.now())
