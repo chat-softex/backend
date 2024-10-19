@@ -82,13 +82,13 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 │   ├── services/                       # Validações e regras de negócio
 │   │   ├── ia_service.py               # Integração com IA (API ChatGPT)
 │   │   ├── firebase_service.py         # Upload/Download de PDFs no Firebase
-|   |   ├── empresa_controller.py       # Validações e regras de negócio para empresas
+|   |   ├── empresa_service.py       # Validações e regras de negócio para empresas
 │   │   ├── projeto_service.py          # Validações e regras de negócio para projetos
 │   │   ├── usuario_service.py          # Validações e regras de negócio para usuários
 │   │   └── avaliacao_service.py        # Regras de negócio para avaliações
 |   |
 │   ├── repositories/                   # Operações de acesso ao banco de dados
-|   |   ├── empresa_controller.py       # Métodos para interagir com a tabela de empresas
+|   |   ├── empresa_repository.py       # Métodos para interagir com a tabela de empresas
 │   │   ├── projeto_repository.py       # Métodos para interagir com a tabela de projetos
 │   │   ├── usuario_repository.py       # Métodos para interagir com a tabela de usuários
 │   │   └── avaliacao_repository.py     # Métodos para interagir com a tabela de avaliações
