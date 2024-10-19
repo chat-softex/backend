@@ -74,15 +74,15 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 │   │   └── file_utils.py               # Funções de upload e download de arquivos (firebase)
 |   |
 │   ├── controllers/                    # Controladores que recebem e processam as requisições HTTP
-|   |   ├── empresa_controller.py       # Lógica de CRUD para empresas
-│   │   ├── projeto_controller.py       # Lógica de CRUD para projetos
-│   │   ├── usuario_controller.py       # Lógica de CRUD para usuários
-│   │   └── avaliacao_controller.py     # Lógica para avaliação e feedback
+|   |   ├── empresa_controller.py       # Requisições HTTP e invocando os serviços para empresas
+│   │   ├── projeto_controller.py       # Requisições HTTP e invocando os serviços para projetos
+│   │   ├── usuario_controller.py       # Requisições HTTP e invocando os serviços para usuários
+│   │   └── avaliacao_controller.py     # Requisições HTTP e invocando os serviços para avaliação e feedback
 |   |
 │   ├── services/                       # Validações e regras de negócio
 │   │   ├── ia_service.py               # Integração com IA (API ChatGPT)
 │   │   ├── firebase_service.py         # Upload/Download de PDFs no Firebase
-|   |   ├── empresa_service.py       # Validações e regras de negócio para empresas
+|   |   ├── empresa_service.py          # Validações e regras de negócio para empresas
 │   │   ├── projeto_service.py          # Validações e regras de negócio para projetos
 │   │   ├── usuario_service.py          # Validações e regras de negócio para usuários
 │   │   └── avaliacao_service.py        # Regras de negócio para avaliações

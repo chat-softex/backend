@@ -1,8 +1,8 @@
 """criando tabelas
 
-Revision ID: a35b80461bf8
+Revision ID: 9d3c5ba4915a
 Revises: 
-Create Date: 2024-10-15 19:56:34.890882
+Create Date: 2024-10-19 17:10:09.354813
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a35b80461bf8'
+revision = '9d3c5ba4915a'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -32,9 +32,9 @@ def upgrade():
     sa.Column('nome', sa.String(length=255), nullable=False),
     sa.Column('email', sa.String(length=255), nullable=False),
     sa.Column('senha', sa.String(length=255), nullable=False),
-    sa.Column('tipo', sa.Enum('Avaliador', 'Administrador', name='usuario_tipo'), nullable=False),
+    sa.Column('tipo', sa.Enum('avaliador', 'administrador', name='usuario_tipo'), nullable=False),
     sa.Column('data_cadastro', sa.TIMESTAMP(), server_default=sa.text('now()'), nullable=True),
-    sa.CheckConstraint("tipo IN ('Avaliador', 'Administrador')", name='check_tipo'),
+    sa.CheckConstraint("tipo IN ('avaliador', 'administrador')", name='check_tipo'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
     )
@@ -42,11 +42,11 @@ def upgrade():
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('titulo_projeto', sa.String(length=255), nullable=False),
     sa.Column('data_submissao', sa.TIMESTAMP(), server_default=sa.text('now()'), nullable=True),
-    sa.Column('status', sa.Enum('Em avaliação', 'Aprovado', 'Reprovado', name='status_projeto'), nullable=False),
+    sa.Column('status', sa.Enum('em avaliação', 'aprovado', 'reprovado', name='status_projeto'), nullable=False),
     sa.Column('arquivo', sa.String(length=500), nullable=False),
     sa.Column('avaliador_id', sa.UUID(), nullable=True),
     sa.Column('empresa_id', sa.UUID(), nullable=True),
-    sa.CheckConstraint("status IN ('Em avaliação', 'Aprovado', 'Reprovado')", name='check_status'),
+    sa.CheckConstraint("status IN ('em avaliação', 'aprovado', 'reprovado')", name='check_status'),
     sa.ForeignKeyConstraint(['avaliador_id'], ['usuarios.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['empresa_id'], ['empresas.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
