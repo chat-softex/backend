@@ -1,3 +1,4 @@
+# app/models/projeto_model.py:
 from app import db
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -12,7 +13,7 @@ class Projeto(db.Model):
     titulo_projeto = db.Column(db.String(255), nullable=False)
     data_submissao = db.Column(db.TIMESTAMP, server_default=func.now())  # nullable=False: usar essa condição na coluna da tabela fará com que o usuario seja obrigado a dogita esse valor visto que não aceitara valor nulo. Porém, esse valor não deverá ser informado pelo usuario. Ele será setado (gerado) automaticamente pelo banco de dados na hora que os dados forem salvos no bando de dados. Usar TIMESTAMP para armazenar um valor de data e hora. Define um valor padrão que será aplicado pelo servidor de banco de dados quando um novo registro for inserido. Isso significa que o valor não é gerado no lado do aplicativo (Python), mas diretamente no banco de dados. Usar server_default=func.now() - essa função (func.now()) invoca a função nativa do banco de dados que retorna a data e hora atuais. No caso do PostgreSQL, ela é equivalente à função NOW(), que retorna a data e hora do sistema do servidor do banco de dados no momento da inserção de um registro. O func é um objeto do SQLAlchemy que permite chamar funções SQL diretamente, como NOW().
 
-    status = db.Column(db.Enum('Em avaliação', 'Aprovado', 'Reprovado', name='status_projeto'), nullable=False) # Coluna define Status do projeto que pode ser 'Em avaliação', 'Aprovado' ou 'Reprovado'
+    status = db.Column(db.Enum('em avaliação', 'aprovado', 'reprovado', name='status_projeto'), nullable=False) # Coluna define Status do projeto que pode ser 'Em avaliação', 'Aprovado' ou 'Reprovado'
 
     arquivo = db.Column(db.String(500), nullable=False)
 
@@ -33,7 +34,7 @@ class Projeto(db.Model):
     
     #  não existe "__table_args__ = (CheckConstraint("tipo IN ('Avaliador', 'Administrador')", name='check_tipo'),)"". A tabela projetos não tem a coluna tipo. A coluna correta é status. E não existe 'Avaliador', 'Administrador' em status. Em status é 'Em avaliação', 'Aprovado', 'Reprovado'.
     __table_args__ = (
-        CheckConstraint("status IN ('Em avaliação', 'Aprovado', 'Reprovado')", name='check_status'),
+        CheckConstraint("status IN ('em avaliação', 'aprovado', 'reprovado')", name='check_status'),
     )
 
     
