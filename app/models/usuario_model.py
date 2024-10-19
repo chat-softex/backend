@@ -35,7 +35,7 @@ class Usuario(db.Model):
     # Coluna que armazena a senha do usuário como uma string. O valor é obrigatório (nullable=False).
     senha = db.Column(db.String(255), nullable=False)
 
-    # Coluna que define o tipo do usuário (ex: Avaliador ou Administrador). O valor é obrigatório (nullable=False).
+    # Coluna que define o tipo do usuário (ex: avaliador ou administrador). O valor é obrigatório (nullable=False).
     tipo = db.Column(db.Enum('avaliador', 'administrador', name='usuario_tipo'), nullable=False)
 
     # Coluna que armazena a data e hora do cadastro do usuário. O valor padrão é a data e hora atual (server_default=func.now()).
@@ -44,9 +44,9 @@ class Usuario(db.Model):
     # Relacionamento com Projetos (Um-para-Muitos)
     projetos = relationship('Projeto', back_populates='avaliador')
 
-    # Define uma restrição na coluna tipo, garantindo que o valor só pode ser "Avaliador" ou "Administrador". Essa restrição garante integridade nos dados armazenados.
+    # Define uma restrição na coluna tipo, garantindo que o valor só pode ser "avaliador" ou "administrador". Essa restrição garante integridade nos dados armazenados.
     __table_args__ = (
-        CheckConstraint("tipo IN ('Avaliador', 'Administrador')", name='check_tipo'),
+        CheckConstraint("tipo IN ('avaliador', 'administrador')", name='check_tipo'),
     )
 
     # Construtor da classe para inicializar um novo objeto Usuario com os valores de nome, email, senha, e tipo.
