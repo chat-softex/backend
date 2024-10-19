@@ -59,6 +59,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 │   │   └── avaliacao_model.py          # Modelo para avaliações
 |   |
 │   ├── routes/                         # Definição das rotas da API (CRUD para projetos, avaliações, usuários)
+|   |   ├── empresa_routes.py           # Rotas para empresas
 │   │   ├── projeto_routes.py           # Rotas para projetos
 │   │   ├── usuario_routes.py           # Rotas para usuários
 │   │   └── avaliacao_routes.py         # Rotas para avaliações
@@ -73,6 +74,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 │   │   └── file_utils.py               # Funções de upload e download de arquivos (firebase)
 |   |
 │   ├── controllers/                    # Controladores que recebem e processam as requisições HTTP
+|   |   ├── empresa_controller.py       # Lógica de CRUD para empresas
 │   │   ├── projeto_controller.py       # Lógica de CRUD para projetos
 │   │   ├── usuario_controller.py       # Lógica de CRUD para usuários
 │   │   └── avaliacao_controller.py     # Lógica para avaliação e feedback
@@ -80,11 +82,13 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 │   ├── services/                       # Validações e regras de negócio
 │   │   ├── ia_service.py               # Integração com IA (API ChatGPT)
 │   │   ├── firebase_service.py         # Upload/Download de PDFs no Firebase
+|   |   ├── empresa_service.py       # Validações e regras de negócio para empresas
 │   │   ├── projeto_service.py          # Validações e regras de negócio para projetos
 │   │   ├── usuario_service.py          # Validações e regras de negócio para usuários
 │   │   └── avaliacao_service.py        # Regras de negócio para avaliações
 |   |
 │   ├── repositories/                   # Operações de acesso ao banco de dados
+|   |   ├── empresa_repository.py       # Métodos para interagir com a tabela de empresas
 │   │   ├── projeto_repository.py       # Métodos para interagir com a tabela de projetos
 │   │   ├── usuario_repository.py       # Métodos para interagir com a tabela de usuários
 │   │   └── avaliacao_repository.py     # Métodos para interagir com a tabela de avaliações
@@ -97,7 +101,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 |   
 ├── requirements.txt                    # Dependências do projeto
 |   
-├── .env                                # Variáveis de ambiente sensíveis (configurações de acesso - Firebase, JWT, DB)
+├── .env                                # Variáveis de ambiente sensíveis(configurações de acesso-Firebase,JWT,DB)
 |   
 ├── app.py                              # Arquivo principal da aplicação Flask
 |   
@@ -144,7 +148,15 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
    - POST /users/login: Autentica um usuário e retorna o token JWT.
 
 
-2. **Projetos:** :x:
+2. **Empresas:** :x:
+   - GET /companies: Retorna todas as empresas.
+   - GET /companies/{id}: Retorna uma empresa específica por ID.
+   - POST /companies: Cadastra uma nova empresa.
+   - PUT /companies/{id}: Atualiza os dados de uma empresa por ID.
+   - DELETE /companies/{id}: Deleta uma empresa por ID.
+
+
+3. **Projetos:** :x:
    - GET /projects: Retorna todos os projetos.
    - GET /projects/{id}: Retorna um projeto específico por ID.
    - POST /projects: Cria um novo projeto (upload de um projeto).
@@ -153,8 +165,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
    - PATCH /projects/{id}/status: Atualiza o status de um projeto ('Em avaliação', 'Aprovado', 'Reprovado').
 
 
-
-3. **Avaliações:** :x:
+4. **Avaliações:** :x:
    - POST /reviews: Cria uma avaliação para um projeto específico.
    - GET /reviews/projects: Retorna a avaliação de todos os projetos.
    - GET /reviews/{project_id}: Retorna a avaliação de um projeto específico.
