@@ -82,7 +82,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 │   ├── services/                       # Validações e regras de negócio
 │   │   ├── ia_service.py               # Integração com IA (API ChatGPT)
 │   │   ├── firebase_service.py         # Upload/Download de PDFs no Firebase
-|   |   ├── empresa_controller.py       # Validações e regras de negócio para empresas
+|   |   ├── empresa_service.py       # Validações e regras de negócio para empresas
 │   │   ├── projeto_service.py          # Validações e regras de negócio para projetos
 │   │   ├── usuario_service.py          # Validações e regras de negócio para usuários
 │   │   └── avaliacao_service.py        # Regras de negócio para avaliações
@@ -148,7 +148,15 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
    - POST /users/login: Autentica um usuário e retorna o token JWT.
 
 
-2. **Projetos:** :x:
+2. **Empresas:** :x:
+   - GET /companies: Retorna todas as empresas.
+   - GET /companies/{id}: Retorna uma empresa específica por ID.
+   - POST /companies: Cadastra uma nova empresa.
+   - PUT /companies/{id}: Atualiza os dados de uma empresa por ID.
+   - DELETE /companies/{id}: Deleta uma empresa por ID.
+
+
+3. **Projetos:** :x:
    - GET /projects: Retorna todos os projetos.
    - GET /projects/{id}: Retorna um projeto específico por ID.
    - POST /projects: Cria um novo projeto (upload de um projeto).
@@ -157,8 +165,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
    - PATCH /projects/{id}/status: Atualiza o status de um projeto ('Em avaliação', 'Aprovado', 'Reprovado').
 
 
-
-3. **Avaliações:** :x:
+4. **Avaliações:** :x:
    - POST /reviews: Cria uma avaliação para um projeto específico.
    - GET /reviews/projects: Retorna a avaliação de todos os projetos.
    - GET /reviews/{project_id}: Retorna a avaliação de um projeto específico.
