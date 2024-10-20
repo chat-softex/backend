@@ -85,7 +85,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 |   |   ├── empresa_service.py          # Validações e regras de negócio para empresas
 │   │   ├── projeto_service.py          # Validações e regras de negócio para projetos
 │   │   ├── usuario_service.py          # Validações e regras de negócio para usuários
-│   │   └── avaliacao_service.py        # Regras de negócio para avaliações
+│   │   └── avaliacao_service.py        # Validações e regras de negócio para avaliações
 |   |
 │   ├── repositories/                   # Operações de acesso ao banco de dados
 |   |   ├── empresa_repository.py       # Métodos para interagir com a tabela de empresas
