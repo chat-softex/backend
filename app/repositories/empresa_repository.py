@@ -12,11 +12,11 @@ class EmpresaRepository:
     @staticmethod
     def get_all():
         
-    # Método estático get_by_id(empresa_id) - Retorna uma empresa específica pelo seu ID. Dica: utilize método get() da consulta ORM 
+    # Método estático def get_by_id(empresa_id) - Retorna uma empresa específica pelo seu ID. Dica: utilize método get() da consulta ORM 
     @staticmethod
     def get_by_id(empresa_id):
         
-    # Método estático get_by_cnpj(cnpj) - Retorna uma empresa específica pelo seu cnpj. Dica: utilize método filter_by() para filtrar por uma coluna específica (neste caso, cnpj) e método first() para retornar apenas o primeiro resultado  da consulta ORM.
+    # Método estático def get_by_cnpj(cnpj) - Retorna uma empresa específica pelo seu cnpj. Dica: utilize método filter_by() para filtrar por uma coluna específica (neste caso, cnpj) e método first() para retornar apenas o primeiro resultado  da consulta ORM.
     @staticmethod
     def get_by_cnpj(cnpj):
         
