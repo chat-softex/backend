@@ -17,6 +17,7 @@ class Avaliacao(db.Model):
 
     # Relacionamento com Projeto (Um-para-Um)
     projeto = relationship('Projeto', back_populates='avaliacao', uselist=False) # Usar back_populates para ter maior controle dos relacionamentos entre as tabelas
+    usuario = relationship('Usuario', back_populates='avaliacao', uselist=False) # Usar back_populates para ter maior controle dos relacionamentos entre as tabelas
     
 
     def __init__(self, projeto_id, feedback_qualitativo):
