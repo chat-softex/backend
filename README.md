@@ -39,6 +39,13 @@
 
 ## Arquitetura do Backend :triangular_ruler: :straight_ruler:
 
+**Diagrama:**
+
+<img src="https://github.com/chat-softex/.github/blob/main/profile/diagrama_arquitetura_software_gestao_projetos_inovacao.png" alt="Diagrama de Arquitetura de Software">
+
+... 
+
+
 ```plaintext
 sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 │
@@ -46,11 +53,13 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 │   ├── __init__.py                     # Inicialização do app Flask e configuração do SQLAlchemy 
 |   |
 │   ├── models/                         # Definições das tabelas - Modelos do SQLAlchemy (ORM)
+|   |   ├── empresa_model.py            # Modelo para empresas
 │   │   ├── projeto_model.py            # Modelo para projetos
 │   │   ├── usuario_model.py            # Modelo para usuários
 │   │   └── avaliacao_model.py          # Modelo para avaliações
 |   |
 │   ├── routes/                         # Definição das rotas da API (CRUD para projetos, avaliações, usuários)
+|   |   ├── empresa_routes.py           # Rotas para empresas
 │   │   ├── projeto_routes.py           # Rotas para projetos
 │   │   ├── usuario_routes.py           # Rotas para usuários
 │   │   └── avaliacao_routes.py         # Rotas para avaliações
@@ -65,18 +74,21 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 │   │   └── file_utils.py               # Funções de upload e download de arquivos (firebase)
 |   |
 │   ├── controllers/                    # Controladores que recebem e processam as requisições HTTP
-│   │   ├── projeto_controller.py       # Lógica de CRUD para projetos
-│   │   ├── usuario_controller.py       # Lógica de CRUD para usuários
-│   │   └── avaliacao_controller.py     # Lógica para avaliação e feedback
+|   |   ├── empresa_controller.py       # Requisições HTTP e invocando os serviços para empresas
+│   │   ├── projeto_controller.py       # Requisições HTTP e invocando os serviços para projetos
+│   │   ├── usuario_controller.py       # Requisições HTTP e invocando os serviços para usuários
+│   │   └── avaliacao_controller.py     # Requisições HTTP e invocando os serviços para avaliação e feedback
 |   |
 │   ├── services/                       # Validações e regras de negócio
 │   │   ├── ia_service.py               # Integração com IA (API ChatGPT)
 │   │   ├── firebase_service.py         # Upload/Download de PDFs no Firebase
+|   |   ├── empresa_service.py          # Validações e regras de negócio para empresas
 │   │   ├── projeto_service.py          # Validações e regras de negócio para projetos
 │   │   ├── usuario_service.py          # Validações e regras de negócio para usuários
-│   │   └── avaliacao_service.py        # Regras de negócio para avaliações
+│   │   └── avaliacao_service.py        # Validações e regras de negócio para avaliações
 |   |
 │   ├── repositories/                   # Operações de acesso ao banco de dados
+|   |   ├── empresa_repository.py       # Métodos para interagir com a tabela de empresas
 │   │   ├── projeto_repository.py       # Métodos para interagir com a tabela de projetos
 │   │   ├── usuario_repository.py       # Métodos para interagir com a tabela de usuários
 │   │   └── avaliacao_repository.py     # Métodos para interagir com a tabela de avaliações
@@ -89,13 +101,12 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 |   
 ├── requirements.txt                    # Dependências do projeto
 |   
-├── .env                                # Variáveis de ambiente sensíveis (configurações de acesso - Firebase, JWT, DB)
+├── .env                                # Variáveis de ambiente sensíveis(configurações de acesso-Firebase,JWT,DB)
 |   
 ├── app.py                              # Arquivo principal da aplicação Flask
 |   
 └── README.md                           # Documentação
 ```
-
 
 **Descrição:** :x:
 
@@ -137,7 +148,15 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
    - POST /users/login: Autentica um usuário e retorna o token JWT.
 
 
-2. **Projetos:** :x:
+2. **Empresas:** :x:
+   - GET /companies: Retorna todas as empresas.
+   - GET /companies/{id}: Retorna uma empresa específica por ID.
+   - POST /companies: Cadastra uma nova empresa.
+   - PUT /companies/{id}: Atualiza os dados de uma empresa por ID.
+   - DELETE /companies/{id}: Deleta uma empresa por ID.
+
+
+3. **Projetos:** :x:
    - GET /projects: Retorna todos os projetos.
    - GET /projects/{id}: Retorna um projeto específico por ID.
    - POST /projects: Cria um novo projeto (upload de um projeto).
@@ -146,8 +165,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
    - PATCH /projects/{id}/status: Atualiza o status de um projeto ('Em avaliação', 'Aprovado', 'Reprovado').
 
 
-
-3. **Avaliações:** :x:
+4. **Avaliações:** :x:
    - POST /reviews: Cria uma avaliação para um projeto específico.
    - GET /reviews/projects: Retorna a avaliação de todos os projetos.
    - GET /reviews/{project_id}: Retorna a avaliação de um projeto específico.
