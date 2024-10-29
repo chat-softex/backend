@@ -15,15 +15,27 @@ class AvaliacaoRepository:
     @staticmethod
     def get_all():
         return db.session.query(Avaliacao).options(
-            joinedload(Avaliacao.projeto).joinedload(Avaliacao.usuarios)
-        ).all()
+            joinedload(Avaliacao.projeto).joinedload(Projeto.avaliador)
+        ).all()  
+        # CORREÇÃO: ao inves de joinedload(Avaliacao.usuarios), o correto é joinedload(Projeto.avaliador)
+        # avaliacao ñ possui uma relação direta com usuarios. A relação é indireta por meio da tabela Projeto (ou seja, Avaliacao → Projeto → Avaliador).
+        # O objetivo era:
+        # Carregar todas as avaliações do banco de dados.
+        # Trazer também os projetos associados a essas avaliações.
+        # Incluir o avaliador responsável pelo projeto, sem fazer múltiplas consultas separadas (ou seja, usando carregamento antecipado para otimizar a performance).
 
-    # Método estático def get_by_id(avaliacao_id) - Retorna uma avaliação específica pelo seu ID, incluindo o projeto associado e o avaliador do projeto. Dica: utilize método filter_by() para filtrar por uma coluna específica (neste caso, id) e método first() para retornar apenas o primeiro resultado  da consulta ORM e e o método joinedload para carregar o Projeto associado a avaliação e carrega também o avaliador do projeto em uma única consulta.
+    # Método estático def get_by_id(id) - Retorna uma avaliação específica pelo seu ID, incluindo o projeto associado e o avaliador do projeto. Dica: utilize método filter_by() para filtrar por uma coluna específica (neste caso, id) e método first() para retornar apenas o primeiro resultado  da consulta ORM e e o método joinedload para carregar o Projeto associado a avaliação e carrega também o avaliador do projeto em uma única consulta.
     @staticmethod
-    def get_by_id(avaliacao_id):
-        return db.session.query(Avaliacao).filter_by(id=avaliacao_id).options(
-            joinedload(Avaliacao.projeto).joinedload(Avaliacao.usuarios)
+    def get_by_id(id):
+        return db.session.query(Avaliacao).filter_by(id=id).options(
+            joinedload(Avaliacao.projeto).joinedload(Projeto.avaliador)
         ).first()
+    # CORREÇÃO: ao inves de joinedload(Avaliacao.usuarios), o correto é joinedload(Projeto.avaliador)
+    # avaliacao ñ possui uma relação direta com usuarios. A relação é indireta por meio da tabela Projeto (ou seja, Avaliacao → Projeto → Avaliador).
+    # O objetivo era:
+    # Carregar todas as avaliações do banco de dados.
+    # Trazer também os projetos associados a essas avaliações.
+    # Incluir o avaliador responsável pelo projeto, sem fazer múltiplas consultas separadas (ou seja, usando carregamento antecipado para otimizar a performance).
 
     # Método estático def create(avaliacao): - Adiciona uma nova avaliacao ao banco de dados. Dica: utilize .session.add() para adicionar o objeto avaliacao à sessão atual e .session.commit() para gravar a transação no banco de dados e retorne avaliacao.
     @staticmethod
@@ -38,10 +50,12 @@ class AvaliacaoRepository:
         db.session.commit()
         return avaliacao
 
-    # Método estático def delete(avaliacao_id) - Remove uma avaliacao com o ID fornecido do banco de dados. Dica: utilize método get() para buscar a avaliacao, .session.delete() para deletar e .session.commit() para finalizar a sessão.
+    # Método estático def delete(id) - Remove uma avaliacao com o ID fornecido do banco de dados. Dica: utilize método get() para buscar a avaliacao, .session.delete() para deletar e .session.commit() para finalizar a sessão.
     @staticmethod
-    def delete(avaliacao_id):
-        avaliacao = db.session.query(Avaliacao).get(avaliacao_id)
+    def delete(id):
+        avaliacao = db.session.query(Avaliacao).get(id)
         if avaliacao:
             db.session.delete(avaliacao)
             db.session.commit()
+        else:
+            raise Exception("Avaliação não existe.")    
