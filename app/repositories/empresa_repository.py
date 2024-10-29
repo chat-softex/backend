@@ -18,17 +18,17 @@ class EmpresaRepository:
     # Retorna a Empresa específica pelo nome fantasia.
     @staticmethod
     def get_by_nome_fantasia(nome_fantasia):
-        return Empresa.query.filter_by(nome_fantasia_empresa=nome_fantasia).first()
+        return Empresa.query.filter_by(nome_fantasia=nome_fantasia).first()
     
     # Retorna a Empresa específica pelo CNPJ.
     @staticmethod
     def get_by_cnpj(cnpj):
-        return Empresa.query.filter_by(cnpj_empresa=cnpj).first()
+        return Empresa.query.filter_by(cnpj=cnpj).first()
     
     # Retorna a Empresa específica pelo email.
     @staticmethod
-    def get_by_email_empresa(email_empresa):
-        return Empresa.query.filter_by(email=email_empresa).first()
+    def get_by_email_empresa(email):
+        return Empresa.query.filter_by(email=email).first()
     
     # Adiciona uma nova Empresa ao banco de dados.
     @staticmethod
