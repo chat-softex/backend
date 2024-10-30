@@ -21,12 +21,12 @@ class ProjetoRepository:
 
     # Retorna um projeto específico pelo ID com seus relacionamentos..
     @staticmethod
-    def get_by_id(projeto_id):
-        return db.session.query(Projeto).options(
+    def get_by_id(id):
+        return db.session.query(Projeto).filter_by(id=id).options(
             joinedload(Projeto.avaliador),
             joinedload(Projeto.empresa),
             joinedload(Projeto.avaliacao)
-        ).filter(Projeto.id == projeto_id).first()
+        ).first()
     
     # Adiciona um novo projeto ao banco de dados e retorna Objeto Projeto recém-criado.
     @staticmethod
@@ -43,8 +43,8 @@ class ProjetoRepository:
 
     # Remove um projeto do banco de dados com base no seu ID.
     @staticmethod
-    def delete(projeto_id):
-        projeto = Projeto.query.get(projeto_id)
+    def delete(id):
+        projeto = Projeto.query.get(id)
         if projeto:
             db.session.delete(projeto)
             db.session.commit()

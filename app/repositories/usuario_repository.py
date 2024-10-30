@@ -13,8 +13,8 @@ class UsuarioRepository:
 
     # Retorna um usuário específico pelo ID.
     @staticmethod
-    def get_by_id(user_id):
-        return Usuario.query.get(user_id)
+    def get_by_id(id):
+        return Usuario.query.get(id=id)
 
     # Retorna um usuário específico pelo email.
     @staticmethod
@@ -36,8 +36,8 @@ class UsuarioRepository:
 
     # Remove um usuário do banco de dados com base no ID.
     @staticmethod
-    def delete(user_id):
-        usuario = Usuario.query.get(user_id)
+    def delete(id):
+        usuario = Usuario.query.get(id)
         if usuario:
             db.session.delete(usuario)
             db.session.commit()
