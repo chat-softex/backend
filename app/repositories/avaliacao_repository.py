@@ -37,6 +37,12 @@ class AvaliacaoRepository:
     # Trazer também os projetos associados a essas avaliações.
     # Incluir o avaliador responsável pelo projeto, sem fazer múltiplas consultas separadas (ou seja, usando carregamento antecipado para otimizar a performance).
 
+    @staticmethod
+    def get_by_projeto_id(projeto_id):
+        return db.session.query(Avaliacao).filter_by(projeto_id=projeto_id).options(
+            joinedload(Avaliacao.projeto).joinedload(Projeto.avaliador)
+        ).first()
+    
     # Método estático def create(avaliacao): - Adiciona uma nova avaliacao ao banco de dados. Dica: utilize .session.add() para adicionar o objeto avaliacao à sessão atual e .session.commit() para gravar a transação no banco de dados e retorne avaliacao.
     @staticmethod
     def create(avaliacao):
