@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+# app/models/empresa_model.py:
+>>>>>>> 8549260730c897cdf26c2777a2e23efd9c31b86f
 from app import db
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship

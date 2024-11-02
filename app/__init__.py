@@ -1,3 +1,4 @@
+# app/__init__.py:
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -25,11 +26,14 @@ def create_app():
 
 
     # from app.routes.usuario_routes import usuario_routes
+    # from app.routes.empresa_routes import empresa_routes
     # from app.routes.projeto_routes import projeto_routes
     # from app.routes.avaliacao_routes import avaliacao_routes
     # app.register_blueprint(usuario_routes)
+    # app.register_blueprint(empresa_routes)
     # app.register_blueprint(projeto_routes)
     # app.register_blueprint(avaliacao_routes)
 
     return app
+
 

@@ -18,17 +18,30 @@ class EmpresaRepository:
     # Retorna a Empresa específica pelo nome fantasia.
     @staticmethod
     def get_by_nome_fantasia(nome_fantasia):
+<<<<<<< HEAD
         return Empresa.query.filter_by(nome_fantasia_empresa=nome_fantasia).first()
+=======
+        return Empresa.query.filter_by(nome_fantasia=nome_fantasia).first()
+>>>>>>> 8549260730c897cdf26c2777a2e23efd9c31b86f
     
     # Retorna a Empresa específica pelo CNPJ.
     @staticmethod
     def get_by_cnpj(cnpj):
+<<<<<<< HEAD
         return Empresa.query.filter_by(cnpj_empresa=cnpj).first()
     
     # Retorna a Empresa específica pelo email.
     @staticmethod
     def get_by_email_empresa(email_empresa):
         return Empresa.query.filter_by(email=email_empresa).first()
+=======
+        return Empresa.query.filter_by(cnpj=cnpj).first()
+    
+    # Retorna a Empresa específica pelo email.
+    @staticmethod
+    def get_by_email_empresa(email):
+        return Empresa.query.filter_by(email=email).first()
+>>>>>>> 8549260730c897cdf26c2777a2e23efd9c31b86f
     
     # Adiciona uma nova Empresa ao banco de dados.
     @staticmethod
@@ -51,4 +64,8 @@ class EmpresaRepository:
             db.session.delete(empresa)
             db.session.commit()
         else:
+<<<<<<< HEAD
             raise Exception("Empresa não existe.")
+=======
+            raise Exception("Empresa não existe.")
+>>>>>>> 8549260730c897cdf26c2777a2e23efd9c31b86f
