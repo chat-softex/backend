@@ -1,117 +1,92 @@
-from marshmallow import Schema, fields, validate, ValidationError
+# app/service/avaliacao_service.py
+import logging
+from marshmallow import ValidationError
 from app.repositories.avaliacao_repository import AvaliacaoRepository
-from app.utils.encryption import Encryption
-from app.utils.jwt_manager import JWTManager
+from app.repositories.projeto_repository import ProjetoRepository
+from app.validators.avaliacao_validator import AvaliacaoSchema
+from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError
 
-# Schema de validação de Usuario
-class AvaliacaoSchema(Schema):
-    # A validação por Regexp foi alterada para aceitar o formato de UUID no padrão '8-4-4-4-12'
-    id = fields.String(
-        required=True, validate=validate.Regexp(
-                r'\b[0-9a-z]{8}-[0-9a-z]{4}-[1-5][0-9a-z]{3}-[89ab][0-9a-z]{3}-[0-9a-z]{12}\b'
-    ))
-    # A validação por Regexp foi alterada para aceitar o formato de UUID no padrão '8-4-4-4-12'
-    projeto_id = fields.String(
-        required=True, validate=validate.Regexp(
-                r'\b[0-9a-z]{8}-[0-9a-z]{4}-[1-5][0-9a-z]{3}-[89ab][0-9a-z]{3}-[0-9a-z]{12}\b'
-    ))
-    # A validação por Regexp foi alterada para aceitar o formato de data e hora no padrão 'YYYY-MM-DD HH:MM:SS'
-    data_avaliacao = fields.String(
-        required=True, validate=validate.Regexp(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}')
-    )
-    feedback_qualitativo = fields.String(required=True, validate=validate.Length(min=10))
+logger = logging.getLogger(__name__)
 
 class AvaliacaoService:
-    # Converte os campos id e projeto_id para letras minúsculas.
-    def _normalize_data(self, data):
-        if 'id' in data:
-            data['nome'] = data['nome'].lower()
-        if 'projeto_id' in data:
-            data['projeto_id'] = data['projeto_id'].lower()
-        return data
+    def __init__(self):
+        self.schema = AvaliacaoSchema()
 
-    # Retorna todas as avaliações cadastradas.
     def get_all(self):
-        return AvaliacaoRepository.get_all()
+        """Retorna todas as avaliações cadastradas com seus projetos e avaliadores."""
+        try:
+            avaliacoes = AvaliacaoRepository.get_all()
+            logger.info("Avaliações obtidas com sucesso.")
+            return avaliacoes
+        except Exception as e:
+            logger.error(f"Erro ao obter avaliações: {e}")
+            raise InternalServerError("Erro ao obter avaliações.")
 
-    # Retorna uma avaliação pelo ID de avaliação ou ID do projeto.
-    def get_by_id(self, id, tipo):
-        avaliacao = None
-        if (tipo=='avaliacao'):
-            avaliacao = AvaliacaoRepository.get_by_id(id.lower())
-        elif (tipo=='projeto'):
-            avaliacao = AvaliacaoRepository.get_by_projeto_id(id.lower())
-        else:
-            raise Exception("Tipo de avaliação inválido.")
+    def get_by_id(self, avaliacao_id):
+        """Busca uma avaliação específica pelo ID."""
+        try:
+            avaliacao = AvaliacaoRepository.get_by_id(avaliacao_id)
+            logger.info(f"Avaliação {avaliacao_id} encontrada.")
+            return avaliacao
+        except NotFoundError:
+            logger.warning(f"Avaliação com ID {avaliacao_id} não encontrada.")
+            raise
+        except Exception as e:
+            logger.error(f"Erro ao buscar avaliação {avaliacao_id}: {e}")
+            raise InternalServerError("Erro ao buscar avaliação.")
 
-        if not avaliacao:
-            raise Exception("Avaliação não encontrada.")
-        return avaliacao
-    
-    # Cria uma nova avaliação.
     def create_avaliacao(self, data):
+        """Cria uma nova avaliação para um projeto específico."""
         try:
-            # Normaliza os dados para letras minúsculas
-            normalized_data = self._normalize_data(data)
+            avaliacao_data = self.schema.load(data)
 
-            # Verifica se a avaliação já existe pelo id da avaliação
-            if AvaliacaoRepository.get_by_id(normalized_data['id']):
-                raise Exception("Avaliação já está cadastrada.")
+            projeto = ProjetoRepository.get_by_id(avaliacao_data['projeto_id'])
+            if not projeto:
+                logger.warning("Projeto não encontrado para avaliação.")
+                raise NotFoundError(resource="Projeto", message="Projeto não encontrado.")
 
-            # Verifica se a avaliação já existe pelo id do projeto
-            if AvaliacaoRepository.get_by_projeto_id(normalized_data['projeto_id']):
-                raise Exception("Avaliação já está cadastrada.")
+            if projeto.avaliacao:
+                logger.warning("Tentativa de avaliação para projeto já avaliado.")
+                raise ConflictError(resource="Projeto", message="O projeto já possui uma avaliação.")
 
-            avaliacao_data = AvaliacaoSchema().load(normalized_data)
-
-            return AvaliacaoRepository.create(avaliacao_data)
-
+            avaliacao = AvaliacaoRepository.create(avaliacao_data)
+            logger.info(f"Avaliação criada com sucesso para o projeto {projeto.id}.")
+            return avaliacao
         except ValidationError as err:
-            raise Exception(f"Erro na validação: {err.messages}")
+            logger.warning(f"Erro na validação da avaliação: {err.messages}")
+            raise ValidationError(f"Erro na validação: {err.messages}")
+        except Exception as e:
+            logger.error(f"Erro ao criar avaliação: {e}")
+            raise InternalServerError("Erro ao criar avaliação.")
 
-    # Atualiza os dados de uma avaliação pelo id da avaliação ou id do projeto.
-    def update_by_id(self, id, data, tipo):
-        avaliacao = None
-        if (tipo=='avaliacao'):
-            avaliacao = AvaliacaoRepository.get_by_id(id)
-        elif (tipo=='projeto'):
-            avaliacao = AvaliacaoRepository.get_by_projeto_id(id)
-        else:
-            raise Exception("Tipo de avaliação inválido.")
-
-        if not avaliacao:
-            raise Exception("Avaliação não encontrada.")
+    def update(self, avaliacao_id, data):
+        """Atualiza os dados de uma avaliação existente."""
+        avaliacao = self.get_by_id(avaliacao_id)
 
         try:
-            # Normaliza os dados para letras minúsculas
-            normalized_data = self._normalize_data(data)
-            updated_data = AvaliacaoRepository().load(normalized_data, partial=True)
+            updated_data = self.schema.load(data, partial=True)
 
-            # Valida se passou pelo menos um campo para atualizar
-            if not any(key in updated_data for key in avaliacao.__dict__.keys()):
-                raise Exception("Nenhum dado foi passado para atualizar.")
-
-            # Atualiza os atributos da avaliação
             for key, value in updated_data.items():
                 setattr(avaliacao, key, value)
 
-            return AvaliacaoRepository.update(avaliacao)
-
+            updated_avaliacao = AvaliacaoRepository.update(avaliacao)
+            logger.info(f"Avaliação {avaliacao_id} atualizada com sucesso.")
+            return updated_avaliacao
         except ValidationError as err:
-            raise Exception(f"Erro na validação: {err.messages}")
+            logger.warning(f"Erro na validação da atualização da avaliação: {err.messages}")
+            raise ValidationError(f"Erro na validação: {err.messages}")
+        except Exception as e:
+            logger.error(f"Erro ao atualizar avaliação {avaliacao_id}: {e}")
+            raise InternalServerError("Erro ao atualizar avaliação.")
 
+    def delete(self, avaliacao_id):
+        """Remove uma avaliação pelo ID."""
+        avaliacao = self.get_by_id(avaliacao_id)
 
-    # Deleta uma avaliação pelo ID.
-    def delete(self, id, tipo):
-        avaliacao = None
-        if (tipo=='avaliacao'):
-            avaliacao = AvaliacaoRepository.get_by_id(id)
-        elif (tipo=='projeto'):
-            avaliacao = AvaliacaoRepository.get_by_projeto_id(id)
-        else:
-            raise Exception("Tipo de avaliação inválido.")
-
-        if not avaliacao:
-            raise Exception("Avaliação não encontrada.")
-        AvaliacaoRepository.delete(avaliacao.id)
-        return {"message": "Avaliação deletada com sucesso."}
+        try:
+            AvaliacaoRepository.delete(avaliacao_id)
+            logger.info(f"Avaliação {avaliacao_id} deletada com sucesso.")
+            return {"message": "Avaliação deletada com sucesso."}
+        except Exception as e:
+            logger.error(f"Erro ao deletar avaliação {avaliacao_id}: {e}")
+            raise InternalServerError("Erro ao deletar avaliação.")
