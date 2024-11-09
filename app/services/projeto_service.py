@@ -1,119 +1,142 @@
-from marshmallow import Schema, fields, validate, ValidationError
+# app/service/projeto_service.py
+import logging
+from marshmallow import ValidationError
 from app.repositories.projeto_repository import ProjetoRepository
 from app.utils.file_utils import FileUtils
+from app.validators.projeto_validator import ProjetoSchema
+from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError
 
-# Schema de validação para Projeto
-class ProjetoSchema(Schema):
-    titulo_projeto = fields.String(required=True, validate=validate.Length(min=5))
-    status = fields.String(
-        required=True,
-        validate=validate.OneOf(['em avaliação', 'aprovado', 'reprovado'])
-    )
-    arquivo = fields.String(required=True)
-    avaliador_id = fields.UUID(required=True)
-    empresa_id = fields.UUID(required=True)
+# Configuração do logger
+logger = logging.getLogger(__name__)
 
 class ProjetoService:
-    ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
+    ALLOWED_EXTENSIONS = {'pdf'}
 
     def __init__(self):
         self.file_utils = FileUtils()
+        self.schema = ProjetoSchema()
 
-    # Valida se o arquivo tem uma extensão permitida (PDF ou Word).
     def _is_allowed_file(self, filename):
-        if '.' not in filename:
-            return False
-        extension = filename.rsplit('.', 1)[1].lower()
-        return extension in self.ALLOWED_EXTENSIONS
+        """Verifica se o arquivo tem uma extensão permitida (apenas PDF)."""
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in self.ALLOWED_EXTENSIONS
 
-    # Converte os campos de string para letras minúsculas.
     def _normalize_data(self, data):
+        """Converte campos específicos para letras minúsculas."""
         if 'titulo_projeto' in data:
             data['titulo_projeto'] = data['titulo_projeto'].lower()
         if 'status' in data:
             data['status'] = data['status'].lower()
         return data
 
-    # Retorna todos os projetos cadastrados.
     def get_all(self):
-        return ProjetoRepository.get_all()
+        """Retorna todos os projetos cadastrados."""
+        try:
+            projetos = ProjetoRepository.get_all()
+            logger.info("Projetos obtidos com sucesso.")
+            return projetos
+        except Exception as e:
+            logger.error(f"Erro ao buscar projetos: {e}")
+            raise InternalServerError("Erro ao obter projetos.")
 
-    # Busca um projeto específico pelo ID.
     def get_by_id(self, projeto_id):
-        projeto = ProjetoRepository.get_by_id(projeto_id)
-        if not projeto:
-            raise Exception("Projeto não encontrado.")
-        return projeto
+        """Busca um projeto específico pelo ID."""
+        try:
+            projeto = ProjetoRepository.get_by_id(projeto_id)
+            logger.info(f"Projeto {projeto_id} encontrado com sucesso.")
+            return projeto
+        except NotFoundError:
+            logger.warning(f"Projeto com ID {projeto_id} não encontrado.")
+            raise
+        except Exception as e:
+            logger.error(f"Erro ao buscar projeto {projeto_id}: {e}")
+            raise InternalServerError("Erro ao buscar projeto.")
 
-    # Cria um novo projeto e faz o upload do arquivo para o Firebase.
     def create_projeto(self, data, file):
+        """Cria um novo projeto, valida e faz upload de um PDF para o Firebase."""
         if not self._is_allowed_file(file.filename):
-            raise Exception("Somente arquivos PDF ou Word são permitidos.")
+            logger.warning("Arquivo com extensão não permitida.")
+            raise ValidationError("Somente arquivos PDF são permitidos.")
+
+        # Valida o PDF para garantir que ele contém texto e não possui dados sensíveis
+        if not self.file_utils.is_valid_pdf(file):
+            logger.warning("PDF inválido ou contém dados sensíveis.")
+            raise ValidationError("O PDF deve conter texto válido e não deve ter dados sensíveis.")
 
         try:
-            # Normaliza os dados
             projeto_data = self._normalize_data(data)
+            projeto_data = self.schema.load(projeto_data)
 
-            # Valida os dados do projeto
-            projeto_data = ProjetoSchema().load(projeto_data)
-
-            # Faz upload do arquivo para o Firebase
-            file_url = self.file_utils.upload_file(file, file.filename)
+            # Faz o upload do PDF para o Firebase e obtém a URL pública
+            file_url = self.file_utils.upload_to_firebase(file, file.filename)
             projeto_data['arquivo'] = file_url
 
-            # Cria o projeto no banco de dados
-            return ProjetoRepository.create(projeto_data)
-
+            projeto = ProjetoRepository.create(projeto_data)
+            logger.info(f"Projeto criado com sucesso: ID {projeto.id}")
+            return projeto
         except ValidationError as err:
-            raise Exception(f"Erro na validação: {err.messages}")
+            logger.warning(f"Erro na validação dos dados do projeto: {err.messages}")
+            raise ValidationError(f"Erro na validação: {err.messages}")
+        except Exception as e:
+            logger.error(f"Erro ao criar projeto: {e}")
+            raise InternalServerError("Erro ao criar projeto.")
 
-    # Atualiza os dados de um projeto, com upload opcional de novo arquivo.
     def update(self, projeto_id, data, file=None):
-        projeto = ProjetoRepository.get_by_id(projeto_id)
-        if not projeto:
-            raise Exception("Projeto não encontrado.")
+        """Atualiza os dados de um projeto, com upload opcional de novo arquivo."""
+        projeto = self.get_by_id(projeto_id)
 
         if file and not self._is_allowed_file(file.filename):
-            raise Exception("Somente arquivos PDF ou Word são permitidos.")
+            logger.warning("Arquivo com extensão não permitida para atualização.")
+            raise ValidationError("Somente arquivos PDF são permitidos.")
 
         try:
-            # Normaliza os dados
             updated_data = self._normalize_data(data)
-
-            # Valida e carrega os dados parciais
-            updated_data = ProjetoSchema().load(updated_data, partial=True)
+            updated_data = self.schema.load(updated_data, partial=True)
 
             # Se um novo arquivo foi enviado, faz upload e atualiza a URL
             if file:
-                file_url = self.file_utils.upload_file(file, file.filename)
+                file_url = self.file_utils.upload_to_firebase(file, file.filename)
                 updated_data['arquivo'] = file_url
 
             # Atualiza os atributos do projeto
             for key, value in updated_data.items():
                 setattr(projeto, key, value)
 
-            return ProjetoRepository.update(projeto)
-
+            updated_projeto = ProjetoRepository.update(projeto)
+            logger.info(f"Projeto {projeto_id} atualizado com sucesso.")
+            return updated_projeto
         except ValidationError as err:
-            raise Exception(f"Erro na validação: {err.messages}")
+            logger.warning(f"Erro na validação dos dados do projeto: {err.messages}")
+            raise ValidationError(f"Erro na validação: {err.messages}")
+        except Exception as e:
+            logger.error(f"Erro ao atualizar projeto {projeto_id}: {e}")
+            raise InternalServerError("Erro ao atualizar projeto.")
 
-    # Remove um projeto pelo ID.
     def delete(self, projeto_id):
-        projeto = ProjetoRepository.get_by_id(projeto_id)
-        if not projeto:
-            raise Exception("Projeto não encontrado.")
-        ProjetoRepository.delete(projeto_id)
-        return {"message": "Projeto deletado com sucesso."}
+        """Remove um projeto pelo ID."""
+        projeto = self.get_by_id(projeto_id)
 
-    # Atualiza o status de um projeto ('em avaliação', 'aprovado', 'reprovado').
+        try:
+            ProjetoRepository.delete(projeto_id)
+            logger.info(f"Projeto {projeto_id} deletado com sucesso.")
+            return {"message": "Projeto deletado com sucesso."}
+        except Exception as e:
+            logger.error(f"Erro ao deletar projeto {projeto_id}: {e}")
+            raise InternalServerError("Erro ao deletar projeto.")
+
     def update_status(self, projeto_id, status):
-        projeto = ProjetoRepository.get_by_id(projeto_id)
-        if not projeto:
-            raise Exception("Projeto não encontrado.")
+        """Atualiza o status de um projeto ('em avaliação', 'aprovado', 'reprovado')."""
+        projeto = self.get_by_id(projeto_id)
 
         normalized_status = status.lower()
         if normalized_status not in ['em avaliação', 'aprovado', 'reprovado']:
-            raise Exception("Status inválido.")
+            logger.warning(f"Status inválido fornecido: {status}")
+            raise ValidationError("Status inválido.")
 
-        projeto.status = normalized_status
-        return ProjetoRepository.update(projeto)
+        try:
+            projeto.status = normalized_status
+            updated_projeto = ProjetoRepository.update(projeto)
+            logger.info(f"Status do projeto {projeto_id} atualizado para '{normalized_status}'.")
+            return updated_projeto
+        except Exception as e:
+            logger.error(f"Erro ao atualizar status do projeto {projeto_id}: {e}")
+            raise InternalServerError("Erro ao atualizar status do projeto.")
