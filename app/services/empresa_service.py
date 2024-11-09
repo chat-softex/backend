@@ -1,111 +1,129 @@
-from marshmallow import Schema, fields, validate, ValidationError
+# app/service/empresa_service.py:
+import logging
+from marshmallow import ValidationError
 from app.repositories.empresa_repository import EmpresaRepository
+from app.validators.empresa_validator import EmpresaSchema
+from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError
 
-# Schema de validação de Empresa
-class EmpresaSchema(Schema):
-    nome_fantasia = fields.String(
-        required=True, validate=validate.Length(min=1, max=50)
-    )
-    cnpj = fields.String(
-        required=True, validate=validate.Length(min=14, max=14), validate=validate.Regexp(r'^[0-9]{14}$')
-    )
-    email = fields.Email(required=True, validate=validate.Length(max=255))
+# Configuração do logger
+logger = logging.getLogger(__name__)
+
 class EmpresaService:
+    def __init__(self):
+        self.schema = EmpresaSchema()
 
-    # Converte os campos nome_fantasia, email para letras minúsculas.
     def _normalize_data(self, data):
+        """Converte campos de string para letras minúsculas."""
         if 'nome_fantasia' in data:
             data['nome_fantasia'] = data['nome_fantasia'].lower()
         if 'email' in data:
             data['email'] = data['email'].lower()
         return data
 
-    # Retorna todos as empresas cadastrados.
     def get_all(self):
-        return EmpresaRepository.get_all()
+        """Retorna todas as empresas cadastradas."""
+        try:
+            empresas = EmpresaRepository.get_all()
+            logger.info("Empresas obtidas com sucesso.")
+            return empresas
+        except Exception as e:
+            logger.error("Erro ao buscar todas as empresas: %s", e)
+            raise InternalServerError("Erro ao buscar todas as empresas.")
 
-    # Retorna uma empresa pelo ID.
-    def get_by_id(self, id):
-        empresa = EmpresaRepository.get_by_id(id)
-        if not empresa:
-            raise Exception("Empresa não encontrada.")
-        return empresa
-    
-    #Retorna a empresa pelo nome fantasia
-    def get_by_nome_fantasia(self, nome_fantasia):
-        empresa = self.get_by_nome_fantasia(nome_fantasia.lower())
-        if not empresa:
-            raise Exception("Empresa não encontrada.")
-        return empresa
-    
-    #Retorna a empresa pelo CNPJ
-    def get_by_cnpj(self, cnpj):
-        empresa = EmpresaRepository.get_by_cnpj(cnpj)
-        if not empresa:
-            raise Exception("Empresa não encontrada.")
-        return empresa
-    
-    # Retorna uma empresa pelo e-mail.
-    def get_by_email_empresa(self, email):
-        empresa = EmpresaRepository.get_by_email_empresa(email.lower())
-        if not empresa:
-            raise Exception("Empresa não encontrada.")
-        return empresa
+    def get_by_id(self, empresa_id):
+        """Busca uma empresa específica pelo ID."""
+        try:
+            empresa = EmpresaRepository.get_by_id(empresa_id)
+            if not empresa:
+                logger.warning("Empresa com ID %s não encontrada.", empresa_id)
+                raise NotFoundError(resource="Empresa", message="Empresa não encontrada.")
+            logger.info("Empresa com ID %s obtida com sucesso.", empresa_id)
+            return empresa
+        except Exception as e:
+            logger.error("Erro ao buscar empresa com ID %s: %s", empresa_id, e)
+            raise InternalServerError("Erro ao buscar empresa.")
 
-    # Cria uma nova Empresa, garantindo CNPJ e e-mail único.
     def create_empresa(self, data):
+        """Cria uma nova empresa, garantindo que o CNPJ e e-mail sejam únicos."""
         try:
-            # Normaliza os dados para letras minúsculas
-            normalized_data = self._normalize_data(data)
+            # Normaliza os dados
+            empresa_data = self._normalize_data(data)
 
-            # Verifica se o e-mail ou CNPJ já está cadastrado
-            if EmpresaRepository.get_by_cnpj(normalized_data['cnpj']):
-                raise Exception("CNPJ já está cadastrado.")
-            if EmpresaRepository.get_by_email_empresa(normalized_data['email']):
-                raise Exception("E-mail já está cadastrado.")
+            # Verifica se o CNPJ ou e-mail já estão cadastrados
+            if EmpresaRepository.get_by_cnpj(empresa_data['cnpj']):
+                logger.warning("CNPJ já cadastrado: %s", empresa_data['cnpj'])
+                raise ConflictError(resource="Empresa", message="CNPJ já cadastrado.")
+            if EmpresaRepository.get_by_email_empresa(empresa_data['email']):
+                logger.warning("E-mail já cadastrado: %s", empresa_data['email'])
+                raise ConflictError(resource="Empresa", message="E-mail já cadastrado.")
 
-            empresa_data = EmpresaSchema().load(normalized_data)
+            # Valida os dados com o schema
+            empresa_data = self.schema.load(empresa_data)
 
-            return EmpresaRepository.create(empresa_data)
-
+            # Cria a empresa no banco de dados
+            empresa = EmpresaRepository.create(empresa_data)
+            logger.info("Empresa criada com sucesso: %s", empresa)
+            return empresa
         except ValidationError as err:
-            raise Exception(f"Erro na validação: {err.messages}")
+            logger.warning("Erro na validação dos dados da empresa: %s", err.messages)
+            raise ValidationError(f"Erro na validação: {err.messages}")
+        except Exception as e:
+            logger.error("Erro ao criar empresa: %s", e)
+            raise InternalServerError("Erro ao criar empresa.")
 
-    # Atualiza os dados de uma empresa, garantindo CNPJ e e-mail único.
-    def update(self, id, data):
-        empresa = EmpresaRepository.get_by_id(id)
-        if not empresa:
-            raise Exception("Empresa não encontrada.")
-
+    def update(self, empresa_id, data):
+        """Atualiza os dados de uma empresa."""
         try:
-            # Normaliza os dados para letras minúsculas
-            normalized_data = self._normalize_data(data)
-            
-            # Se o cnpj está sendo alterado, verifica se já está em uso por outra empresa
-            if 'cnpj' in normalized_data and normalized_data['cnpj'] != empresa.cnpj:
-                if EmpresaRepository.get_by_cnpj(normalized_data['cnpj']):
-                    raise Exception("CNPJ já está cadastrado.")
-                
-            # Se o e-mail está sendo alterado, verifica se já está em uso por outra empresa
-            if 'email' in normalized_data and normalized_data['email'] != empresa.email:
-                if EmpresaRepository.get_by_email_empresa(normalized_data['email']):
-                    raise Exception("E-mail já está cadastrado.")
+            empresa = EmpresaRepository.get_by_id(empresa_id)
+            if not empresa:
+                logger.warning("Empresa com ID %s não encontrada.", empresa_id)
+                raise NotFoundError(resource="Empresa", message="Empresa não encontrada.")
 
-            updated_data = EmpresaSchema().load(normalized_data, partial=True)
+            # Normaliza os dados
+            updated_data = self._normalize_data(data)
+
+            # Se o CNPJ foi alterado, valida e verifica se já está cadastrado
+            if 'cnpj' in updated_data and updated_data['cnpj'] != empresa.cnpj:
+                if EmpresaRepository.get_by_cnpj(updated_data['cnpj']):
+                    logger.warning("CNPJ já cadastrado: %s", updated_data['cnpj'])
+                    raise ConflictError(resource="Empresa", message="CNPJ já cadastrado.")
+
+            # Se o e-mail foi alterado, verifica se já está cadastrado
+            if 'email' in updated_data and updated_data['email'] != empresa.email:
+                if EmpresaRepository.get_by_email_empresa(updated_data['email']):
+                    logger.warning("E-mail já cadastrado: %s", updated_data['email'])
+                    raise ConflictError(resource="Empresa", message="E-mail já cadastrado.")
+
+            # Valida os dados com o schema
+            updated_data = self.schema.load(updated_data, partial=True)
 
             # Atualiza os atributos da empresa
             for key, value in updated_data.items():
                 setattr(empresa, key, value)
 
-            return EmpresaRepository.update(empresa)
-
+            # Salva a atualização no repositório
+            empresa = EmpresaRepository.update(empresa)
+            logger.info("Empresa com ID %s atualizada com sucesso.", empresa_id)
+            return empresa
         except ValidationError as err:
-            raise Exception(f"Erro na validação: {err.messages}")
+            logger.warning("Erro na validação dos dados da empresa: %s", err.messages)
+            raise ValidationError(f"Erro na validação: {err.messages}")
+        except Exception as e:
+            logger.error("Erro ao atualizar empresa com ID %s: %s", empresa_id, e)
+            raise InternalServerError("Erro ao atualizar empresa.")
 
-    # Deleta um empresa pelo ID.
-    def delete(self, id):
-        empresa = EmpresaRepository.get_by_id(id)
-        if not empresa:
-            raise Exception("Empresa não encontrada.")
-        EmpresaRepository.delete(id)
-        return {"message": "Empresa deletada com sucesso."}
+    def delete(self, empresa_id):
+        """Remove uma empresa pelo ID."""
+        try:
+            empresa = EmpresaRepository.get_by_id(empresa_id)
+            if not empresa:
+                logger.warning("Tentativa de deletar empresa não encontrada: ID %s", empresa_id)
+                raise NotFoundError(resource="Empresa", message="Empresa não encontrada.")
+            EmpresaRepository.delete(empresa_id)
+            logger.info("Empresa com ID %s deletada com sucesso.", empresa_id)
+            return {"message": "Empresa deletada com sucesso."}
+        except NotFoundError:
+            raise
+        except Exception as e:
+            logger.error("Erro ao deletar empresa com ID %s: %s", empresa_id, e)
+            raise InternalServerError("Erro ao deletar empresa.")
