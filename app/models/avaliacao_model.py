@@ -1,3 +1,4 @@
+# app/models/avaliacao_model.py:
 from app import db
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import ForeignKey

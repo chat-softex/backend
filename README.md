@@ -29,21 +29,25 @@
 
 :small_blue_diamond: [Rotas - EndPoints](#rotas---endpoints-arrows_clockwise) :x:
 
-:small_blue_diamond: [Instalação das Dependências](#Instalação-das-depedências-arrow_down_small)
+:small_blue_diamond: [Criar e ativar ambiente virtual](#criar-e-ativar-ambiente-virtual-white_check_mark)
 
-:small_blue_diamond: [Iniciação e migration Database](#Iniciação-e-migration-Database-file_folder)
+:small_blue_diamond: [Instalação das Dependências](#instalação-das-depedências-arrow_down_small)
+
+:small_blue_diamond: [Iniciação e migration Database](#iniciação-e-migration-database-file_folder)
 
 :small_blue_diamond: [Executar App](#executar-app-arrow_forward)
 
-...
+---
+
+Criar e ativar ambiente virtual :white_check_mark:
 
 ## Arquitetura do Backend :triangular_ruler: :straight_ruler:
 
 **Diagrama:**
 
-<img src="https://github.com/chat-softex/.github/blob/main/profile/diagrama_arquitetura_software_gestao_projetos_inovacao.png" alt="Diagrama de Arquitetura de Software">
+<img src="https://github.com/chat-softex/.github/blob/main/profile/diagrama_arquitetura_software_gestao_projetos_inovacao.drawio.png" alt="Diagrama de Arquitetura de Software">
 
-... 
+--- 
 
 
 ```plaintext
@@ -65,13 +69,13 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 │   │   └── avaliacao_routes.py         # Rotas para avaliações
 |   |
 │   ├── middlewares/                    # Middleware de segurança e autenticação (ex: JWT, CORS)
-│   │   ├── auth.py                     # Middleware JWT para autenticação
-|   |   └── cors_middleware.py
+│   │   ├── auth.py                     # Middlewares para proteger rotas com autenticação JWT e verificar permissões específicas de usuários
+|   |   └── cors_middleware.py          # Middleware para habilitar CORS, permitindo que a aplicação receba requisições de origens diferentes 
 |   |
 │   ├── utils/                          # Funções utilitárias (criptografia, JWT, etc.)
 │   │   ├── encryption.py               # Funções para criptografia de arquivos
-│   │   ├── jwt_manager.py              # Gerenciamento de tokens JWT
-│   │   └── file_utils.py               # Funções de upload e download de arquivos (firebase)
+│   │   ├── jwt_manager.py              # Gerencia a criação e decodificação de tokens JWT, usados para autenticação de usuários
+│   │   └── file_utils.py               # Utilitário para manipulação de arquivos PDF e upload para o Firebase
 |   |
 │   ├── controllers/                    # Controladores que recebem e processam as requisições HTTP
 |   |   ├── empresa_controller.py       # Requisições HTTP e invocando os serviços para empresas
@@ -79,13 +83,24 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 │   │   ├── usuario_controller.py       # Requisições HTTP e invocando os serviços para usuários
 │   │   └── avaliacao_controller.py     # Requisições HTTP e invocando os serviços para avaliação e feedback
 |   |
-│   ├── services/                       # Validações e regras de negócio
+│   ├── validators/                    # Validação de dados de entrada como formatos, tipos, e outras restrições básicas através das bibliotecas marshmallow e validate-docbr
+|   |   ├── empresa_validator.py       # Validação de dados de entrada de  empresas
+│   │   ├── projeto_validator.py       # Validação de dados de entrada de projetos
+│   │   ├── usuario_validator.py       # Validação de dados de entrada de usuários
+│   │   └── avaliacao_validator.py     # Validação de dados de entrada de avaliação e feedback
+|   |
+|   |
+│   ├── erros/                         # Exceções específicas da aplicação e classes de erro personalizadas para lidar com erros
+│   │   ├── custom_errors.py           # Exceções personalizadas para erros comuns que podem ocorrer em uma aplicação
+│   │   └── error_handler.py           # Centraliza o tratamento de erros na aplicação
+|   |
+│   ├── services/                       # Validações das regras de negócio
 │   │   ├── ia_service.py               # Integração com IA (API ChatGPT)
-│   │   ├── firebase_service.py         # Upload/Download de PDFs no Firebase
-|   |   ├── empresa_service.py          # Validações e regras de negócio para empresas
-│   │   ├── projeto_service.py          # Validações e regras de negócio para projetos
-│   │   ├── usuario_service.py          # Validações e regras de negócio para usuários
-│   │   └── avaliacao_service.py        # Validações e regras de negócio para avaliações
+│   │   ├── firebase_service.py         # Configura e implementa o serviço FirebaseService, que interage com o Firebase Storage para upload e download de arquivos.
+|   |   ├── empresa_service.py          # Validações das regras de negócio para empresas
+│   │   ├── projeto_service.py          # Validações das regras de negócio para projetos
+│   │   ├── usuario_service.py          # Validações das regras de negócio para usuários
+│   │   └── avaliacao_service.py        # Validações das regras de negócio para avaliações
 |   |
 │   ├── repositories/                   # Operações de acesso ao banco de dados
 |   |   ├── empresa_repository.py       # Métodos para interagir com a tabela de empresas
@@ -116,26 +131,32 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 
 3. **controllers/:** Implementam a lógica de controle, recebendo as requisições HTTP e invocando os serviços.
 
-4. **services/:** Camada de lógica de negócio, validações e processamento e integrações com serviços externos (IA, Firebase).
+4. **services/:** Camada de lógica de negócio, aplica as restrições e lógicas mais específicas da aplicação,
+ e processamento e integrações com serviços externos (IA, Firebase).
 
-5. **repositories/:** Responsável por interagir com o banco de dados através do ORM SQLAlchemy.
+1. **validators/:**  Valida os dados de entrada antes de eles serem processados atraves das bibliotecas marshmallow e validate-docbr. Essa camada é responsável por checar formatos, tipos, e outras restrições básicas, garantindo que os dados estejam no formato correto antes de chegarem aos serviços ou controladores.
 
-6. **middleware/:** Implementa segurança e autenticação.
+2. **repositories/:** Responsável por interagir com o banco de dados através do ORM SQLAlchemy.
 
-7. **utils/:** Funções auxiliares, como criptografia e gerenciamento de tokens.
+3. **middleware/:** Implementa segurança e autenticação.
 
-8. **config/:** Configurações gerais da aplicação.
+4. **utils/:** Funções auxiliares, como criptografia e gerenciamento de tokens.
 
-9. **migrations/:** Contém as migrações de banco de dados, responsáveis por criar, alterar e manter as tabelas no PostgreSQL.
+5. **config/:** Configurações gerais da aplicação.
 
-10. **requirements.txt:** Lista de todas as dependências e bibliotecas necessárias para o projeto (ex.: Flask, SQLAlchemy, Firebase SDK).
+6.  **migrations/:** Contém as migrações de banco de dados, responsáveis por criar, alterar e manter as tabelas no PostgreSQL.
 
-11. **.env:** Arquivo de variáveis de ambiente sensíveis, como chaves de API, credenciais do Firebase, configurações de JWT, entre outros.
+7.  **erros/:** Tratamento de exceções específicas e definição de classes de erro personalizadas para situações comuns ou críticas na aplicação.
 
-12. **app.py:** Arquivo principal que inicializa e executa a aplicação Flask.
+8.  **requirements.txt:** Lista de todas as dependências e bibliotecas necessárias para o projeto (ex.: Flask, SQLAlchemy, Firebase SDK).
 
-13. **README.md:** Documentação do projeto, instruções de configuração, execução e detalhes de cada parte do sistema.
+9.  **.env:** Arquivo de variáveis de ambiente sensíveis, como chaves de API, credenciais do Firebase, configurações de JWT, entre outros.
 
+10. **app.py:** Arquivo principal que inicializa e executa a aplicação Flask.
+
+11. **README.md:** Documentação do projeto, instruções de configuração, execução e detalhes de cada parte do sistema.
+
+---
 
 ## Rotas - EndPoints :arrows_clockwise:
 
@@ -172,16 +193,38 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
    - PUT /reviews/{id}: Atualiza uma avaliação por ID.
    - DELETE /reviews/{id}: Deleta uma avaliação por ID.
 
+---
 
-## Instalação das depedências :arrow_down_small:
+## Configuração e Instalação :gear:
+
+### Criar e ativar ambiente virtual :white_check_mark:
+
+```bash
+$ python -m venv venv
+```
+
+**MacOS/Linux:**
+```bash
+$ source venv/bin/activate
+```
+
+**Windows:**
+```bash
+$ venv\Scripts\activate 
+```
+
+---
+
+### Instalação das depedências :arrow_down_small:
 
 ```bash
 $ pip install -r requirements.txt
 
 ```
 
+---
 
-## Iniciação e migration Database :file_folder:
+### Iniciação e migration Database :file_folder:
 
 ```bash
 $ flask db init
@@ -190,7 +233,9 @@ $ flask db upgrade
 
 ```
 
-## Executar app :arrow_forward:
+---
+
+### Executar app :arrow_forward:
 
 **development:**
 ```bash
@@ -199,12 +244,11 @@ $ flask run
 ```
 
 ```bash
-Running on http://localhost:5000/
+Running on http://127.0.0.1:5000/
 
 ```
 
-...  
-
+---  
 
 ## Licença 
 

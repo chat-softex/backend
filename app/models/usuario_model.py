@@ -1,3 +1,4 @@
+# app/models/usuario_model.py:
 from app import db
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -25,10 +26,10 @@ class Usuario(db.Model):
     )
 
     def __init__(self, nome, email, senha, tipo):
-        self.nome = nome
-        self.email = email
+        self.nome = nome.lower()
+        self.email = email.lower()
         self.senha = senha
-        self.tipo = tipo
+        self.tipo = tipo.lower()
 
     def __repr__(self):
-        return f'<Usuario {self.nome}, Email: {self.email}, Tipo: {self.tipo}>'
+        return f'<Usuario: {self.nome}, Email: {self.email}, Tipo: {self.tipo}>'

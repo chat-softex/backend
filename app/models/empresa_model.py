@@ -1,3 +1,4 @@
+# app/models/empresa_model.py:
 from app import db
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -16,9 +17,9 @@ class Empresa(db.Model):
     projetos = relationship('Projeto', back_populates='empresa', cascade="all, delete-orphan")
     
     def __init__(self, nome_fantasia, cnpj, email):
-        self.nome_fantasia = nome_fantasia
+        self.nome_fantasia = nome_fantasia.lower()
         self.cnpj = cnpj
-        self.email = email
+        self.email = email.lower()
     
     def __repr__(self):
         return f'<Empresa: {self.nome_fantasia}, CNPJ: {self.cnpj}, Email: {self.email}>'

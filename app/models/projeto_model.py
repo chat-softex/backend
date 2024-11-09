@@ -1,3 +1,4 @@
+# app/models/projeto_model.py:
 from app import db
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -31,8 +32,8 @@ class Projeto(db.Model):
 
     def __init__(self, titulo_projeto, status, arquivo, avaliador_id, empresa_id):
         
-        self.titulo_projeto = titulo_projeto
-        self.status = status
+        self.titulo_projeto = titulo_projeto.lower()
+        self.status = status.lower()
         self.arquivo = arquivo
         self.avaliador_id = avaliador_id
         self.empresa_id = empresa_id
