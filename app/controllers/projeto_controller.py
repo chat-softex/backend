@@ -59,7 +59,7 @@ class ProjetoController:
     def deletar_projeto(projeto_id):
         try:
             ProjetoService().delete(projeto_id)
-            return jsonify({"message": "Projeto deletado com sucesso"}), 200
+            return '', 204  # sem corpo de resposta
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
         except Exception as e:
