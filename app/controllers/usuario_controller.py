@@ -56,7 +56,7 @@ class UsuarioController:
     def deletar_usuario(usuario_id):
         try:
             UsuarioService().delete(usuario_id)
-            return jsonify({"message": "Usuário deletado com sucesso"}), 200
+            return '', 204  # sem corpo de resposta
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
         except Exception as e:
