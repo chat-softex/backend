@@ -1,4 +1,4 @@
-# app/service/projeto_service.py
+# app/service/projeto_service.py:
 import logging
 from marshmallow import ValidationError
 from app.repositories.projeto_repository import ProjetoRepository
@@ -10,14 +10,14 @@ from app.erros.custom_errors import NotFoundError, ConflictError, InternalServer
 logger = logging.getLogger(__name__)
 
 class ProjetoService:
-    ALLOWED_EXTENSIONS = {'pdf'}
+    ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
 
     def __init__(self):
         self.file_utils = FileUtils()
         self.schema = ProjetoSchema()
 
     def _is_allowed_file(self, filename):
-        """Verifica se o arquivo tem uma extensão permitida (apenas PDF)."""
+        """Verifica se o arquivo tem uma extensão permitida (PDF, DOC, DOCX)."""
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in self.ALLOWED_EXTENSIONS
 
     def _normalize_data(self, data):
@@ -52,21 +52,21 @@ class ProjetoService:
             raise InternalServerError("Erro ao buscar projeto.")
 
     def create_projeto(self, data, file):
-        """Cria um novo projeto, valida e faz upload de um PDF para o Firebase."""
+        """Cria um novo projeto e valida o arquivo (PDF, DOC, DOCX) para o Firebase."""
         if not self._is_allowed_file(file.filename):
             logger.warning("Arquivo com extensão não permitida.")
-            raise ValidationError("Somente arquivos PDF são permitidos.")
+            raise ValidationError("Somente arquivos PDF, DOC e DOCX são permitidos.")
 
-        # Valida o PDF para garantir que ele contém texto e não possui dados sensíveis
-        if not self.file_utils.is_valid_pdf(file):
-            logger.warning("PDF inválido ou contém dados sensíveis.")
-            raise ValidationError("O PDF deve conter texto válido e não deve ter dados sensíveis.")
+        # Verifica se o documento é válido e não possui dados sensíveis
+        if not self.file_utils.is_valid_document(file, file.filename):
+            logger.warning("Documento inválido ou contém dados sensíveis.")
+            raise ValidationError("O documento deve conter texto válido e não deve ter dados sensíveis.")
 
         try:
             projeto_data = self._normalize_data(data)
             projeto_data = self.schema.load(projeto_data)
 
-            # Faz o upload do PDF para o Firebase e obtém a URL pública
+            # Faz o upload do documento para o Firebase e obtém a URL pública
             file_url = self.file_utils.upload_to_firebase(file, file.filename)
             projeto_data['arquivo'] = file_url
 
@@ -86,18 +86,16 @@ class ProjetoService:
 
         if file and not self._is_allowed_file(file.filename):
             logger.warning("Arquivo com extensão não permitida para atualização.")
-            raise ValidationError("Somente arquivos PDF são permitidos.")
+            raise ValidationError("Somente arquivos PDF, DOC e DOCX são permitidos.")
 
         try:
             updated_data = self._normalize_data(data)
             updated_data = self.schema.load(updated_data, partial=True)
 
-            # Se um novo arquivo foi enviado, faz upload e atualiza a URL
             if file:
                 file_url = self.file_utils.upload_to_firebase(file, file.filename)
                 updated_data['arquivo'] = file_url
 
-            # Atualiza os atributos do projeto
             for key, value in updated_data.items():
                 setattr(projeto, key, value)
 
@@ -110,33 +108,20 @@ class ProjetoService:
         except Exception as e:
             logger.error(f"Erro ao atualizar projeto {projeto_id}: {e}")
             raise InternalServerError("Erro ao atualizar projeto.")
+        
 
-    def delete(self, projeto_id):
-        """Remove um projeto pelo ID."""
+    def update_status(self, projeto_id, novo_status):
+        """Atualiza o status de um projeto."""
+        if novo_status not in ['em avaliação', 'aprovado', 'reprovado']:
+            logger.warning(f"Status inválido: {novo_status}")
+            raise ValidationError(field="status", message="Status deve ser 'em avaliação', 'aprovado' ou 'reprovado'.")
+
         projeto = self.get_by_id(projeto_id)
-
         try:
-            ProjetoRepository.delete(projeto_id)
-            logger.info(f"Projeto {projeto_id} deletado com sucesso.")
-            return {"message": "Projeto deletado com sucesso."}
-        except Exception as e:
-            logger.error(f"Erro ao deletar projeto {projeto_id}: {e}")
-            raise InternalServerError("Erro ao deletar projeto.")
-
-    def update_status(self, projeto_id, status):
-        """Atualiza o status de um projeto ('em avaliação', 'aprovado', 'reprovado')."""
-        projeto = self.get_by_id(projeto_id)
-
-        normalized_status = status.lower()
-        if normalized_status not in ['em avaliação', 'aprovado', 'reprovado']:
-            logger.warning(f"Status inválido fornecido: {status}")
-            raise ValidationError("Status inválido.")
-
-        try:
-            projeto.status = normalized_status
+            projeto.status = novo_status
             updated_projeto = ProjetoRepository.update(projeto)
-            logger.info(f"Status do projeto {projeto_id} atualizado para '{normalized_status}'.")
+            logger.info(f"Status do projeto {projeto_id} atualizado para '{novo_status}'.")
             return updated_projeto
         except Exception as e:
             logger.error(f"Erro ao atualizar status do projeto {projeto_id}: {e}")
-            raise InternalServerError("Erro ao atualizar status do projeto.")
+            raise InternalServerError("Erro ao atualizar o status do projeto.")    
