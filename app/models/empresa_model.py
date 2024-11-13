@@ -23,3 +23,12 @@ class Empresa(db.Model):
     
     def __repr__(self):
         return f'<Empresa: {self.nome_fantasia}, CNPJ: {self.cnpj}, Email: {self.email}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'nome_fantasia': self.nome_fantasia,
+            'cnpj': self.cnpj,
+            'email': self.email,
+            'data_cadastro': self.data_cadastro
+        }
