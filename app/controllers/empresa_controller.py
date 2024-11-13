@@ -4,7 +4,6 @@ from flask import request, jsonify
 from app.services.empresa_service import EmpresaService
 from app.erros.error_handler import ErrorHandler
 from app.erros.custom_errors import NotFoundError, ValidationError, ConflictError
-from app.models.empresa_model import Empresa
 
 logger = logging.getLogger(__name__)
 

@@ -48,7 +48,7 @@ def jwt_required(f):
         return f(*args, **kwargs)
     return decorated
 
-def admin_required(f):
+def avaliador_required(f):
     """Middleware para limitar o acesso aos administradores."""
     @wraps(f)
     def decorated(*args, **kwargs):
