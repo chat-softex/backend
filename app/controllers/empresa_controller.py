@@ -1,4 +1,3 @@
-
 import logging
 from flask import request, jsonify
 from app.services.empresa_service import EmpresaService
@@ -17,39 +16,9 @@ class EmpresaController:
             return ErrorHandler.handle_generic_exception(e)
 
     @staticmethod
-    def obter_empresa_id(id):
+    def obter_empresa(empresa_id):
         try:
-            empresa = EmpresaService().get_by_id(id)
-            return jsonify(empresa.to_dict()), 200
-        except NotFoundError as e:
-            return ErrorHandler.handle_not_found_error(e)
-        except Exception as e:
-            return ErrorHandler.handle_generic_exception(e)
-        
-    @staticmethod
-    def obter_empresa_nome_fantasia(nome_fantasia):
-        try:
-            empresa = EmpresaService().get_by_nome_fantasia(nome_fantasia)
-            return jsonify(empresa.to_dict()), 200
-        except NotFoundError as e:
-            return ErrorHandler.handle_not_found_error(e)
-        except Exception as e:
-            return ErrorHandler.handle_generic_exception(e)
-        
-    @staticmethod
-    def obter_empresa_cnpj(cnpj):
-        try:
-            empresa = EmpresaService().get_by_cnpj(cnpj)
-            return jsonify(empresa.to_dict()), 200
-        except NotFoundError as e:
-            return ErrorHandler.handle_not_found_error(e)
-        except Exception as e:
-            return ErrorHandler.handle_generic_exception(e)
-        
-    @staticmethod
-    def obter_empresa_email(email):
-        try:
-            empresa = EmpresaService().get_by_email_empresa(email)
+            empresa = EmpresaService().get_by_id(empresa_id)
             return jsonify(empresa.to_dict()), 200
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
@@ -70,11 +39,11 @@ class EmpresaController:
             return ErrorHandler.handle_generic_exception(e)
 
     @staticmethod
-    def atualizar_empresa(id):
+    def atualizar_empresa(empresa_id):
         try:
             data = request.get_json()
-            usuario = EmpresaService().update(id, data)
-            return jsonify(usuario.to_dict()), 200
+            empresa = EmpresaService().update(empresa_id, data)
+            return jsonify(empresa.to_dict()), 200
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
         except ValidationError as e:
@@ -83,12 +52,11 @@ class EmpresaController:
             return ErrorHandler.handle_generic_exception(e)
 
     @staticmethod
-    def deletar_empresa(id):
+    def deletar_empresa(empresa_id):
         try:
-            EmpresaService().delete(id)
-            return 'Empresa deletada com sucesso', 204  # sem corpo de resposta ****(POSSO RETORNAR UMA RESPOSTA FRANCIS? TIVEMOS ESSA DÚVIDA)****
+            EmpresaService().delete(empresa_id)
+            return jsonify({"message": "Empresa deletada com sucesso"}), 200
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
         except Exception as e:
             return ErrorHandler.handle_generic_exception(e)
-
