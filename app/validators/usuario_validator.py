@@ -2,7 +2,7 @@
 from marshmallow import Schema, fields, validate, ValidationError
 
 # Schema de validação de Usuario
-class UsuarioSchema(Schema):
+class UserSchema(Schema):
     nome = fields.String(
         required=True, 
         validate=validate.Length(min=3, max=255)

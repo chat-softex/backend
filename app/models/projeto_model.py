@@ -6,7 +6,7 @@ from sqlalchemy import CheckConstraint, ForeignKey
 from sqlalchemy.sql import func
 import uuid
 
-class Projeto(db.Model):
+class Project(db.Model):
     __tablename__ = 'projetos'
    
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

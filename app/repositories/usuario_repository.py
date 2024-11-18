@@ -1,21 +1,21 @@
 # app/repositories/usuario_repository.py:
 import logging
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from app.models.usuario_model import Usuario
+from app.models.usuario_model import User
 from app import db
 from app.erros.custom_errors import NotFoundError, InternalServerError, ConflictError
 
 # Configuração do logger
-logger = logging.getLogger("UsuarioRepository")
+logger = logging.getLogger("UserRepository")
 
-class UsuarioRepository:
+class UserRepository:
     """Repositório para operações CRUD com a entidade Usuario"""
 
     # Retorna todos os usuários cadastrados no banco de dados.
     @staticmethod
     def get_all():
         try:
-            usuarios = Usuario.query.all()
+            usuarios = User.query.all()
             logger.info("Usuários obtidos com sucesso.")
             return usuarios
         except SQLAlchemyError as e:
@@ -26,7 +26,7 @@ class UsuarioRepository:
     @staticmethod
     def get_by_id(id):
         try:
-            usuario = Usuario.query.get(id)
+            usuario = User.query.get(id)
             if not usuario:
                 logger.warning(f"Usuário com ID {id} não encontrado.")
                 raise NotFoundError(resource="Usuario", message="Usuário não encontrado.")
@@ -40,7 +40,7 @@ class UsuarioRepository:
     @staticmethod
     def get_by_email(email):
         try:
-            usuario = Usuario.query.filter_by(email=email).first()
+            usuario = User.query.filter_by(email=email).first()
             if not usuario:
                 logger.warning(f"Usuário com email {email} não encontrado.")
                 raise NotFoundError(resource="Usuario", message="Usuário com esse email não encontrado.")
@@ -52,12 +52,12 @@ class UsuarioRepository:
 
     # Adiciona um novo usuário ao banco de dados.
     @staticmethod
-    def create(usuario):
+    def create(user):
         try:
-            db.session.add(usuario)
+            db.session.add(user)
             db.session.commit()
-            logger.info(f"Usuário criado com sucesso: {usuario.id}")
-            return usuario
+            logger.info(f"Usuário criado com sucesso: {user.id}")
+            return user
         except IntegrityError as e:
             db.session.rollback()
             logger.warning(f"Erro de integridade ao criar usuário: {e}")
@@ -69,21 +69,21 @@ class UsuarioRepository:
 
     # Atualiza um usuário existente no banco de dados.
     @staticmethod
-    def update(usuario):
+    def update(user):
         try:
             db.session.commit()
-            logger.info(f"Usuário com ID {usuario.id} atualizado com sucesso.")
-            return usuario
+            logger.info(f"Usuário com ID {user.id} atualizado com sucesso.")
+            return user
         except SQLAlchemyError as e:
             db.session.rollback()
-            logger.error(f"Erro ao atualizar usuário com ID {usuario.id}: {e}")
+            logger.error(f"Erro ao atualizar usuário com ID {user.id}: {e}")
             raise InternalServerError(message="Erro ao atualizar usuário.")
 
     # Remove um usuário do banco de dados com base no ID.
     @staticmethod
     def delete(id):
         try:
-            usuario = UsuarioRepository.get_by_id(id)
+            usuario = UserRepository.get_by_id(id)
             db.session.delete(usuario)
             db.session.commit()
             logger.info(f"Usuário com ID {id} deletado com sucesso.")

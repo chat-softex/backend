@@ -2,7 +2,7 @@
 from marshmallow import Schema, fields, validate, ValidationError, validates
 
 # Schema de validação de Avaliacao
-class AvaliacaoSchema(Schema):
+class ReviewSchema(Schema):
     """Schema de validação para Avaliações."""
     projeto_id = fields.UUID(required=True)
     feedback_qualitativo = fields.String(

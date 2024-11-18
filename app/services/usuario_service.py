@@ -1,8 +1,8 @@
 # app/service/usuario_service.py:
 import logging
 from marshmallow import ValidationError
-from app.repositories.usuario_repository import UsuarioRepository
-from app.validators.usuario_validator import UsuarioSchema
+from app.repositories.usuario_repository import UserRepository
+from app.validators.usuario_validator import UserSchema
 from app.utils.encryption import Encryption
 from app.utils.jwt_manager import JWTManager
 from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError
@@ -10,10 +10,10 @@ from app.erros.custom_errors import NotFoundError, ConflictError, InternalServer
 # Configuração do logger
 logger = logging.getLogger(__name__)
 
-class UsuarioService:
+class UserService:
     def __init__(self):
         self.encryption = Encryption()
-        self.schema = UsuarioSchema()
+        self.schema = UserSchema()
 
     def _normalize_data(self, data):
         """Converte campos específicos para letras minúsculas."""
@@ -25,7 +25,7 @@ class UsuarioService:
     def get_all(self):
         """Retorna todos os usuários cadastrados."""
         try:
-            usuarios = UsuarioRepository.get_all()
+            usuarios = UserRepository.get_all()
             logger.info("Usuários obtidos com sucesso.")
             return usuarios
         except Exception as e:
@@ -35,7 +35,7 @@ class UsuarioService:
     def get_by_id(self, user_id):
         """Busca um usuário específico pelo ID."""
         try:
-            usuario = UsuarioRepository.get_by_id(user_id)
+            usuario = UserRepository.get_by_id(user_id)
             logger.info(f"Usuário {user_id} encontrado.")
             return usuario
         except NotFoundError:
@@ -45,18 +45,18 @@ class UsuarioService:
             logger.error(f"Erro ao buscar usuário {user_id}: {e}")
             raise InternalServerError("Erro ao buscar usuário.")
 
-    def create_usuario(self, data):
+    def create(self, data):
         """Cria um novo usuário, garantindo e-mail único."""
         normalized_data = self._normalize_data(data)
 
-        if UsuarioRepository.get_by_email(normalized_data['email']):
+        if UserRepository.get_by_email(normalized_data['email']):
             logger.warning("Tentativa de criação com e-mail já cadastrado.")
             raise ConflictError(resource="E-mail", message="E-mail já está cadastrado.")
 
         try:
             usuario_data = self.schema.load(normalized_data)
             usuario_data['senha'] = self.encryption.encrypt(usuario_data['senha'])
-            usuario = UsuarioRepository.create(usuario_data)
+            usuario = UserRepository.create(usuario_data)
             logger.info(f"Usuário criado com sucesso: ID {usuario.id}")
             return usuario
         except ValidationError as err:
@@ -73,7 +73,7 @@ class UsuarioService:
         normalized_data = self._normalize_data(data)
 
         if 'email' in normalized_data and normalized_data['email'] != usuario.email:
-            if UsuarioRepository.get_by_email(normalized_data['email']):
+            if UserRepository.get_by_email(normalized_data['email']):
                 logger.warning(f"E-mail {normalized_data['email']} já em uso.")
                 raise ConflictError(resource="E-mail", message="E-mail já está cadastrado.")
 
@@ -85,7 +85,7 @@ class UsuarioService:
             for key, value in updated_data.items():
                 setattr(usuario, key, value)
 
-            updated_usuario = UsuarioRepository.update(usuario)
+            updated_usuario = UserRepository.update(usuario)
             logger.info(f"Usuário {user_id} atualizado com sucesso.")
             return updated_usuario
         except ValidationError as err:
@@ -97,15 +97,23 @@ class UsuarioService:
 
     def delete(self, user_id):
         """Remove um usuário pelo ID."""
-        usuario = self.get_by_id(user_id)
-
         try:
-            UsuarioRepository.delete(user_id)
-            logger.info(f"Usuário {user_id} deletado com sucesso.")
+            # Busca o usuário pelo ID para verificar se existe
+            usuario = UserRepository.get_by_id(user_id)
+            if not usuario:
+                logger.warning("Tentativa de deletar usuário não encontrado: ID %s", user_id)
+                raise NotFoundError(resource="Usuário", message="Usuário não encontrado.")
+            
+            # Deleta o usuário
+            UserRepository.delete(user_id)
+            logger.info("Usuário com ID %s deletado com sucesso.", user_id)
             return {"message": "Usuário deletado com sucesso."}
+        except NotFoundError:
+            raise
         except Exception as e:
-            logger.error(f"Erro ao deletar usuário {user_id}: {e}")
+            logger.error("Erro ao deletar usuário com ID %s: %s", user_id, e)
             raise InternalServerError("Erro ao deletar usuário.")
+
 
     def login(self, email, senha):
         """Autentica um usuário e gera um token JWT."""

@@ -1,25 +1,25 @@
 # app/controllers/usuario_controller.py:
 import logging
 from flask import request, jsonify
-from app.services.usuario_service import UsuarioService
+from app.services.usuario_service import UserService
 from app.erros.error_handler import ErrorHandler
 from app.erros.custom_errors import NotFoundError, ValidationError, ConflictError
 
 logger = logging.getLogger(__name__)
 
-class UsuarioController:
+class UserController:
     @staticmethod
-    def listar_usuarios():
+    def get_all():
         try:
-            usuarios = UsuarioService().get_all()
+            usuarios = UserService().get_all()
             return jsonify([usuario.to_dict() for usuario in usuarios]), 200
         except Exception as e:
             return ErrorHandler.handle_generic_exception(e)
 
     @staticmethod
-    def obter_usuario(usuario_id):
+    def get_by_id(id):
         try:
-            usuario = UsuarioService().get_by_id(usuario_id)
+            usuario = UserService().get_by_id(id)
             return jsonify(usuario.to_dict()), 200
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
@@ -27,10 +27,10 @@ class UsuarioController:
             return ErrorHandler.handle_generic_exception(e)
 
     @staticmethod
-    def criar_usuario():
+    def create():
         try:
             data = request.get_json()
-            usuario = UsuarioService().create_usuario(data)
+            usuario = UserService().create(data)
             return jsonify(usuario.to_dict()), 201
         except ValidationError as e:
             return ErrorHandler.handle_validation_error(e)
@@ -40,10 +40,10 @@ class UsuarioController:
             return ErrorHandler.handle_generic_exception(e)
 
     @staticmethod
-    def atualizar_usuario(usuario_id):
+    def update(id):
         try:
             data = request.get_json()
-            usuario = UsuarioService().update(usuario_id, data)
+            usuario = UserService().update(id, data)
             return jsonify(usuario.to_dict()), 200
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
@@ -53,9 +53,9 @@ class UsuarioController:
             return ErrorHandler.handle_generic_exception(e)
 
     @staticmethod
-    def deletar_usuario(usuario_id):
+    def delete(id):
         try:
-            UsuarioService().delete(usuario_id)
+            UserService().delete(id)
             return '', 204  # sem corpo de resposta
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
@@ -71,7 +71,7 @@ class UsuarioController:
             if not email or not senha:
                 raise ValidationError("Login", "Email e senha são obrigatórios")
             
-            result = UsuarioService().login(email, senha)
+            result = UserService().login(email, senha)
             return jsonify(result), 200
         except ValidationError as e:
             return ErrorHandler.handle_validation_error(e)

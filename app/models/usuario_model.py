@@ -6,7 +6,7 @@ from sqlalchemy import CheckConstraint
 import uuid
 from sqlalchemy.sql import func
 
-class Usuario(db.Model):
+class User(db.Model):
 
     __tablename__ = 'usuarios'
 

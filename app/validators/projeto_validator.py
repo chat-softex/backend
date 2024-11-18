@@ -2,7 +2,7 @@
 from marshmallow import Schema, fields, validate, ValidationError, validates
 
 # Schema de validação de Projeto
-class ProjetoSchema(Schema):
+class ProjectSchema(Schema):
     titulo_projeto = fields.String(
         required=True, 
         validate=validate.Length(min=5)

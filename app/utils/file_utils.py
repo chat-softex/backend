@@ -1,12 +1,16 @@
-# app/utils/file_utils.py:
+# app/utils/file_utils.py
 import os
 import re
-import PyPDF2
+import logging
 from io import BytesIO
 from app.services.firebase_service import FirebaseService
-from docx import Document  # Para trabalhar com arquivos DOCX
+from app.utils.text_extractor import TextExtractor  # Importação de TextExtractor
+from app.erros.custom_errors import InternalServerError, ValidationError  # Adicionando ValidationError
+
+logger = logging.getLogger(__name__)
 
 class FileUtils:
+    MAX_CHARACTERS = 25000  # Limite de caracteres
     SENSITIVE_PATTERNS = {
         "CNPJ": r"\b\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}\b",
         "CPF": r"\b\d{3}\.\d{3}\.\d{3}-\d{2}\b",
@@ -27,41 +31,35 @@ class FileUtils:
             text = re.sub(pattern, "[DADO REMOVIDO]", text, flags=re.IGNORECASE)
         return text
 
+    def _is_within_character_limit(self, text):
+        """Verifica se o texto está dentro do limite de caracteres."""
+        return len(text) <= self.MAX_CHARACTERS
+
     def is_valid_pdf(self, file):
-        """Verifica se o PDF contém texto e remove dados sensíveis."""
+        """Verifica se o PDF contém texto útil dentro do limite de caracteres e remove dados sensíveis."""
         try:
-            file_stream = BytesIO(file.read())
-            pdf_reader = PyPDF2.PdfReader(file_stream)
-            text = ""
-            
-            for page in pdf_reader.pages:
-                page_text = page.extract_text() or ""
-                page_text = self._remove_sensitive_data(page_text)  # Remove dados sensíveis
-                text += page_text
-                
-            return bool(text.strip())  # Retorna True se o PDF tiver conteúdo útil
+            text = TextExtractor.extract_text_pdf(file.read())
+            text = self._remove_sensitive_data(text)
+            if not self._is_within_character_limit(text):
+                raise ValidationError("file", "Documento excede o limite de caracteres permitido.")
+            return bool(text.strip())
         except Exception as e:
-            print(f"Erro ao processar o PDF: {e}")
-            return False
+            logger.error(f"Erro ao validar PDF: {e}")
+            raise InternalServerError("Erro ao processar o arquivo PDF.")
         finally:
-            file.seek(0)  # Retorna ao início do arquivo para que possa ser lido novamente
+            file.seek(0)
 
     def is_valid_docx(self, file):
-        """Verifica se o DOCX contém texto e remove dados sensíveis."""
+        """Verifica se o DOCX contém texto útil dentro do limite de caracteres e remove dados sensíveis."""
         try:
-            file_stream = BytesIO(file.read())
-            doc = Document(file_stream)
-            text = ""
-            
-            for paragraph in doc.paragraphs:
-                para_text = paragraph.text or ""
-                para_text = self._remove_sensitive_data(para_text)  # Remove dados sensíveis
-                text += para_text + "\n"
-            
-            return bool(text.strip())  # Retorna True se o DOCX tiver conteúdo útil
+            text = TextExtractor.extract_text_docx(file.read())
+            text = self._remove_sensitive_data(text)
+            if not self._is_within_character_limit(text):
+                raise ValidationError("file", "Documento excede o limite de caracteres permitido.")
+            return bool(text.strip())
         except Exception as e:
-            print(f"Erro ao processar o DOCX: {e}")
-            return False
+            logger.error(f"Erro ao validar DOCX: {e}")
+            raise InternalServerError("Erro ao processar o arquivo DOCX.")
         finally:
             file.seek(0)
 
@@ -73,19 +71,19 @@ class FileUtils:
         elif extension in {'doc', 'docx'}:
             return self.is_valid_docx(file)
         else:
-            return False
+            raise ValidationError("file", "Formato de arquivo não permitido.")
 
     def upload_to_firebase(self, file, filename):
         """Usa o FirebaseService para fazer upload e obter a URL pública."""
-        file_path = f"/tmp/{filename}"  # Salva temporariamente o arquivo para upload
-        with open(file_path, 'wb') as f:
-            f.write(file.read())
-        file.seek(0)  # Reseta o ponteiro do arquivo
+        try:
+            file_path = f"/tmp/{filename}"
+            with open(file_path, 'wb') as f:
+                f.write(file.read())
+            file.seek(0)
 
-        # Faz o upload e obtém a URL
-        public_url = FirebaseService.upload_file(file_path, filename)
-        
-        # Remove o arquivo temporário após o upload
-        os.remove(file_path)
-        
-        return public_url
+            public_url = FirebaseService.upload_file(file_path, filename)
+            os.remove(file_path)
+            return public_url
+        except Exception as e:
+            logger.error(f"Erro ao fazer upload para o Firebase: {e}")
+            raise InternalServerError("Erro ao fazer upload do arquivo.")
