@@ -1,24 +1,25 @@
+# app/controllers/avaliacao_controller.py:
 import logging
 from flask import request, jsonify
-from app.services.avaliacao_service import AvaliacaoService
+from app.services.avaliacao_service import ReviewService
 from app.erros.error_handler import ErrorHandler
 from app.erros.custom_errors import NotFoundError, ValidationError, ConflictError
 
 logger = logging.getLogger(__name__)
 
-class AvaliacaoController:
+class ReviewController:
     @staticmethod
-    def listar_avaliacoes():
+    def get_all():
         try:
-            avaliacoes = AvaliacaoService().get_all()
+            avaliacoes = ReviewService().get_all()
             return jsonify([avaliacao.to_dict() for avaliacao in avaliacoes]), 200
         except Exception as e:
             return ErrorHandler.handle_generic_exception(e)
 
     @staticmethod
-    def obter_avaliacao(avaliacao_id):
+    def get_by_id(id):
         try:
-            avaliacao = AvaliacaoService().get_by_id(avaliacao_id)
+            avaliacao = ReviewService().get_by_id(id)
             return jsonify(avaliacao.to_dict()), 200
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
@@ -26,10 +27,10 @@ class AvaliacaoController:
             return ErrorHandler.handle_generic_exception(e)
 
     @staticmethod
-    def criar_avaliacao():
+    def create():
         try:
             data = request.get_json()
-            avaliacao = AvaliacaoService().create_avaliacao(data)
+            avaliacao = ReviewService().create(data)
             return jsonify(avaliacao.to_dict()), 201
         except ValidationError as e:
             return ErrorHandler.handle_validation_error(e)
@@ -39,10 +40,10 @@ class AvaliacaoController:
             return ErrorHandler.handle_generic_exception(e)
 
     @staticmethod
-    def atualizar_avaliacao(avaliacao_id):
+    def update(id):
         try:
             data = request.get_json()
-            avaliacao = AvaliacaoService().update(avaliacao_id, data)
+            avaliacao = ReviewService().update(id, data)
             return jsonify(avaliacao.to_dict()), 200
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
@@ -52,9 +53,9 @@ class AvaliacaoController:
             return ErrorHandler.handle_generic_exception(e)
 
     @staticmethod
-    def deletar_avaliacao(avaliacao_id):
+    def delete(id):
         try:
-            AvaliacaoService().delete(avaliacao_id)
+            ReviewService().delete(id)
             return jsonify({"message": "Avaliação deletada com sucesso"}), 200
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)

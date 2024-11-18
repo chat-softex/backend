@@ -1,40 +1,41 @@
+# app/routes/avaliacao_routes.py:
 from flask import Blueprint
-from app.controllers.avaliacao_controller import AvaliacaoController
+from app.controllers.avaliacao_controller import ReviewController
 from app.middlewares.auth import jwt_required, avaliador_required
 
 avaliacao_routes = Blueprint("avaliacao_routes", __name__)
 
 # Lista todas as avaliações - somente avaliadores
-@avaliacao_routes.route('/avaliacoes', methods=['GET'])
+@avaliacao_routes.route('/reviews', methods=['GET'])
 @jwt_required
 @avaliador_required
-def listar_avaliacoes():
-    return AvaliacaoController.listar_avaliacoes()
+def get_all_reviews():
+    return ReviewController.get_all()
 
 # Obtém uma avaliação específica pelo ID - somente avaliadores
-@avaliacao_routes.route('/avaliacoes/<uuid:avaliacao_id>', methods=['GET'])
+@avaliacao_routes.route('/reviews/<uuid:id>', methods=['GET'])
 @jwt_required
 @avaliador_required
-def obter_avaliacao(avaliacao_id):
-    return AvaliacaoController.obter_avaliacao(avaliacao_id)
+def get_by_id_review(id):
+    return ReviewController.get_by_id(id)
 
 # Cria uma nova avaliação - somente avaliadores
-@avaliacao_routes.route('/avaliacoes', methods=['POST'])
+@avaliacao_routes.route('/reviews', methods=['POST'])
 @jwt_required
 @avaliador_required
-def criar_avaliacao():
-    return AvaliacaoController.criar_avaliacao()
+def create_review():
+    return ReviewController.create()
 
 # Atualiza uma avaliação específica pelo ID - somente avaliadores
-@avaliacao_routes.route('/avaliacoes/<uuid:avaliacao_id>', methods=['PUT'])
+@avaliacao_routes.route('/reviews/<uuid:id>', methods=['PUT'])
 @jwt_required
 @avaliador_required
-def atualizar_avaliacao(avaliacao_id):
-    return AvaliacaoController.atualizar_avaliacao(avaliacao_id)
+def update_review(id):
+    return ReviewController.update(id)
 
 # Deleta uma avaliação específica pelo ID - somente avaliadores
-@avaliacao_routes.route('/avaliacoes/<uuid:avaliacao_id>', methods=['DELETE'])
+@avaliacao_routes.route('/reviews/<uuid:id>', methods=['DELETE'])
 @jwt_required
 @avaliador_required
-def deletar_avaliacao(avaliacao_id):
-    return AvaliacaoController.deletar_avaliacao(avaliacao_id)
+def delete_review(id):
+    return ReviewController.delete(id)

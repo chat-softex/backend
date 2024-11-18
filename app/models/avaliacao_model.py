@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
 
-class Avaliacao(db.Model):
+class Review(db.Model):
     __tablename__ = 'avaliacoes'
     
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

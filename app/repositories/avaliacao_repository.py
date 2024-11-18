@@ -2,23 +2,23 @@
 import logging
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import joinedload
-from app.models.avaliacao_model import Avaliacao
-from app.models.projeto_model import Projeto
+from app.models.avaliacao_model import Review
+from app.models.projeto_model import Project
 from app import db
 from app.erros.custom_errors import NotFoundError, InternalServerError, ConflictError
 
 # Configuração do logger
-logger = logging.getLogger("AvaliacaoRepository")
+logger = logging.getLogger("ReviewRepository")
 
-class AvaliacaoRepository:
+class ReviewRepository:
     """Repositório para operações CRUD com a entidade Avaliacao"""
 
     # Retorna todas as avaliações com o projeto associado e seu avaliador.
     @staticmethod
     def get_all():
         try:
-            avaliacoes = db.session.query(Avaliacao).options(
-                joinedload(Avaliacao.projeto).joinedload(Projeto.avaliador)
+            avaliacoes = db.session.query(Review).options(
+                joinedload(Review.projeto).joinedload(Review.avaliador)
             ).all()
             logger.info("Avaliações obtidas com sucesso.")
             return avaliacoes
@@ -30,8 +30,8 @@ class AvaliacaoRepository:
     @staticmethod
     def get_by_id(id):
         try:
-            avaliacao = db.session.query(Avaliacao).filter_by(id=id).options(
-                joinedload(Avaliacao.projeto).joinedload(Projeto.avaliador)
+            avaliacao = db.session.query(Review).filter_by(id=id).options(
+                joinedload(Review.projeto).joinedload(Project.avaliador)
             ).first()
             if not avaliacao:
                 logger.warning(f"Avaliação com ID {id} não encontrada.")
@@ -44,12 +44,12 @@ class AvaliacaoRepository:
 
     # Adiciona uma nova avaliação ao banco de dados.
     @staticmethod
-    def create(avaliacao):
+    def create(review):
         try:
-            db.session.add(avaliacao)
+            db.session.add(review)
             db.session.commit()
-            logger.info(f"Avaliação criada com sucesso: {avaliacao.id}")
-            return avaliacao
+            logger.info(f"Avaliação criada com sucesso: {review.id}")
+            return review
         except IntegrityError as e:
             db.session.rollback()
             logger.warning(f"Erro de integridade ao criar avaliação: {e}")
@@ -61,21 +61,21 @@ class AvaliacaoRepository:
 
     # Atualiza uma avaliação existente no banco de dados.
     @staticmethod
-    def update(avaliacao):
+    def update(review):
         try:
             db.session.commit()
-            logger.info(f"Avaliação com ID {avaliacao.id} atualizada com sucesso.")
-            return avaliacao
+            logger.info(f"Avaliação com ID {review.id} atualizada com sucesso.")
+            return review
         except SQLAlchemyError as e:
             db.session.rollback()
-            logger.error(f"Erro ao atualizar avaliação com ID {avaliacao.id}: {e}")
+            logger.error(f"Erro ao atualizar avaliação com ID {review.id}: {e}")
             raise InternalServerError(message="Erro ao atualizar avaliação.")
 
     # Remove uma avaliação do banco de dados com base no ID.
     @staticmethod
     def delete(id):
         try:
-            avaliacao = AvaliacaoRepository.get_by_id(id)  # Garante que a avaliação existe
+            avaliacao = ReviewRepository.get_by_id(id)  # Garante que a avaliação existe
             db.session.delete(avaliacao)
             db.session.commit()
             logger.info(f"Avaliação com ID {id} deletada com sucesso.")
