@@ -188,8 +188,8 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 
 4. **Avaliações:** :x:
    - POST /reviews: Cria uma avaliação para um projeto específico.
-   - GET /reviews/projects: Retorna a avaliação de todos os projetos.
-   - GET /reviews/{project_id}: Retorna a avaliação de um projeto específico.
+   - GET /reviews: Retorna todas as avaliações.
+   - GET /reviews/{id}: Retorna uma avaliação específica por ID.
    - PUT /reviews/{id}: Atualiza uma avaliação por ID.
    - DELETE /reviews/{id}: Deleta uma avaliação por ID.
 
