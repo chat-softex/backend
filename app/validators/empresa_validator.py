@@ -3,7 +3,7 @@ from marshmallow import Schema, fields, validate, ValidationError, validates
 from validate_docbr import CNPJ
 
 # Schema de validação de Empresa
-class EmpresaSchema(Schema):
+class CompanySchema(Schema):
     """Schema de validação para Empresas."""
     nome_fantasia = fields.String(
         required=True,

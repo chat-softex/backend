@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
 
-class Empresa(db.Model):
+class Company(db.Model):
     __tablename__ = 'empresas'
     
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
