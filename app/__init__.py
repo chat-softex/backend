@@ -18,10 +18,10 @@ def create_app():
     init_cors(app)
 
 
-    from app.models.usuario_model import Usuario
-    from app.models.empresa_model import Empresa
-    from app.models.projeto_model import Projeto
-    from app.models.avaliacao_model import Avaliacao
+    from app.models.usuario_model import User
+    from app.models.empresa_model import Company
+    from app.models.projeto_model import Project
+    from app.models.avaliacao_model import Review
 
 
     with app.app_context():

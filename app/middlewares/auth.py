@@ -3,7 +3,7 @@ import logging
 from flask import request, jsonify, g
 from functools import wraps
 from app.utils.jwt_manager import JWTManager
-from app.repositories.usuario_repository import UsuarioRepository
+from app.repositories.usuario_repository import UserRepository
 from app.erros.custom_errors import UnauthorizedError, InvalidTokenError
 from app.erros.error_handler import ErrorHandler
 
@@ -29,7 +29,7 @@ def jwt_required(f):
                 raise InvalidTokenError("Formato de token inválido. Use o formato 'Bearer <token>'.")
 
             token_data = JWTManager.decode_token(token)
-            request.user = UsuarioRepository.get_by_id(token_data['data']['id'])
+            request.user = UserRepository.get_by_id(token_data['data']['id'])
             if not request.user:
                 logger.warning("Usuário não encontrado para o token fornecido.")
                 raise UnauthorizedError("Usuário não encontrado.")
