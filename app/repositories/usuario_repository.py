@@ -52,8 +52,9 @@ class UserRepository:
 
     # Adiciona um novo usuário ao banco de dados.
     @staticmethod
-    def create(user):
+    def create(data):
         try:
+            user = User(**data)
             db.session.add(user)
             db.session.commit()
             logger.info(f"Usuário criado com sucesso: {user.id}")

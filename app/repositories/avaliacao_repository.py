@@ -18,7 +18,7 @@ class ReviewRepository:
     def get_all():
         try:
             avaliacoes = db.session.query(Review).options(
-                joinedload(Review.projeto).joinedload(Review.avaliador)
+                joinedload(Review.projeto)
             ).all()
             logger.info("Avaliações obtidas com sucesso.")
             return avaliacoes
@@ -31,7 +31,7 @@ class ReviewRepository:
     def get_by_id(id):
         try:
             avaliacao = db.session.query(Review).filter_by(id=id).options(
-                joinedload(Review.projeto).joinedload(Project.avaliador)
+                joinedload(Review.projeto)
             ).first()
             if not avaliacao:
                 logger.warning(f"Avaliação com ID {id} não encontrada.")
@@ -44,8 +44,9 @@ class ReviewRepository:
 
     # Adiciona uma nova avaliação ao banco de dados.
     @staticmethod
-    def create(review):
+    def create(data):
         try:
+            review = Review(**data)
             db.session.add(review)
             db.session.commit()
             logger.info(f"Avaliação criada com sucesso: {review.id}")

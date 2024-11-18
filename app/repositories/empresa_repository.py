@@ -54,8 +54,9 @@ class CompanyRepository:
 
     # Adiciona uma nova empresa ao banco de dados.
     @staticmethod
-    def create(company):
+    def create(data):
         try:
+            company = Company(**data)
             db.session.add(company)
             db.session.commit()
             logger.info(f"Empresa criada com sucesso: {company.id}")

@@ -47,8 +47,9 @@ class ProjectRepository:
 
     # Adiciona um novo projeto ao banco de dados.
     @staticmethod
-    def create(project):
+    def create(data):
         try:
+            project = Project(**data)
             db.session.add(project)
             db.session.commit()
             logger.info(f"Projeto criado com sucesso: {project.id}")

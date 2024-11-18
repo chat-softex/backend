@@ -3,7 +3,7 @@ import openai
 import os
 import time
 import logging
-from app.services.projeto_service import ProjetoService
+from app.services.projeto_service import ProjectService
 from app.utils.text_extractor import TextExtractor
 from app.erros.custom_errors import NotFoundError, ValidationError, InternalServerError
 
@@ -20,18 +20,18 @@ class IaService:
     ]
     MAX_RETRIES = 3
 
-    def __init__(self, projeto_service=ProjetoService()):
+    def __init__(self, projeto_service=ProjectService()):
         self.projeto_service = projeto_service
 
-    def obter_texto_projeto(self, projeto_id):
+    def obter_texto_projeto(self, project_id):
         """Obtém e extrai o texto do arquivo do projeto para análise."""
-        projeto = self.projeto_service.get_by_id(projeto_id)
+        projeto = self.projeto_service.get_by_id(project_id)
         if not projeto:
-            logger.warning(f"Projeto com ID {projeto_id} não encontrado.")
+            logger.warning(f"Projeto com ID {project_id} não encontrado.")
             raise NotFoundError("Projeto", "Projeto não encontrado")
         
-        # Extrai o texto com base no tipo de arquivo (PDF, DOC ou DOCX)
-        file_content = projeto.arquivo.read()  # Supõe-se que arquivo seja um objeto file-like
+        # extrai o texto com base no tipo de arquivo (PDF, DOC ou DOCX)
+        file_content = projeto.arquivo.read()  
         if projeto.arquivo.name.endswith('.pdf'):
             texto = TextExtractor.extract_text_pdf(file_content)
         elif projeto.arquivo.name.endswith(('.doc', '.docx')):
@@ -49,7 +49,7 @@ class IaService:
         for attempt in range(self.MAX_RETRIES):
             try:
                 response = openai.ChatCompletion.create(
-                    model="gpt-4",  # Certifique-se de que o nome do modelo esteja correto
+                    model="gpt-4",  
                     messages=[
                         {"role": "system", "content": "Você é um assistente especializado em avaliar projetos de inovação tecnológica."},
                         {"role": "user", "content": f"Texto do projeto para análise:\n\n{projeto_texto}\n\nPontos a serem analisados:\n- " + "\n- ".join(self.PONTOS_ANALISE)}
@@ -70,17 +70,17 @@ class IaService:
                 logger.error(f"Erro inesperado ao acessar a API: {e}")
                 raise InternalServerError("Erro inesperado ao acessar o serviço de IA.")
 
-    def avaliar_projeto(self, projeto_id):
-        """Realiza a análise do projeto a partir de seu ID."""
-        try:
-            projeto_texto = self.obter_texto_projeto(projeto_id)
-            logger.info(f"Iniciando análise para o projeto ID {projeto_id}.")
-            resultado_analise = self.enviar_para_analise(projeto_texto)
-            return resultado_analise
-        except NotFoundError as e:
-            raise e
-        except ValidationError as e:
-            raise e
-        except Exception as e:
-            logger.error(f"Erro ao avaliar projeto {projeto_id}: {e}")
-            raise InternalServerError("Erro ao avaliar o projeto.")
+    # def avaliar_projeto(self, project_id):
+    #     """Realiza a análise do projeto a partir de seu ID."""
+    #     try:
+    #         projeto_texto = self.obter_texto_projeto(project_id)
+    #         logger.info(f"Iniciando análise para o projeto ID {project_id}.")
+    #         resultado_analise = self.enviar_para_analise(projeto_texto)
+    #         return resultado_analise
+    #     except NotFoundError as e:
+    #         raise e
+    #     except ValidationError as e:
+    #         raise e
+    #     except Exception as e:
+    #         logger.error(f"Erro ao avaliar projeto {project_id}: {e}")
+    #         raise InternalServerError("Erro ao avaliar o projeto.")
