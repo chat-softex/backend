@@ -6,5 +6,5 @@ class ReviewSchema(Schema):
     """Schema de validação para Avaliações."""
     projeto_id = fields.UUID(required=True)
     feedback_qualitativo = fields.String(
-        required=True, validate=validate.Length(min=10, max=1000)
+        required=True, validate=validate.Length(min=10)
     )
