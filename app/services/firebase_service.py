@@ -13,7 +13,7 @@ class FirebaseService:
         bucket = storage.bucket()
         blob = bucket.blob(file_name)
         blob.upload_from_filename(file_path)
-        # blob.make_public()  # Torna o arquivo público
+        blob.make_public()  # Torna o arquivo público
         return blob.public_url
 
     @staticmethod

@@ -3,7 +3,7 @@ import logging
 from flask import jsonify
 from .custom_errors import (
     ValidationError, NotFoundError, UnauthorizedError, ExternalAPIError,
-    ConflictError, InternalServerError, InvalidTokenError
+    ConflictError, InternalServerError, InvalidTokenError, SensitiveDataError
 )
 
 # Configuração global de logging
@@ -52,3 +52,8 @@ class ErrorHandler:
     def handle_generic_exception(error: Exception):
         logger.error("[Exception] Erro inesperado", exc_info=error)
         return jsonify({"status": "error", "error_type": "Exception", "message": "Internal server error"}), 500
+    
+    @staticmethod
+    def handle_sensitive_data_error(error: SensitiveDataError):
+        logger.warning(f"[SensitiveDataError] Dados sensíveis detectados: {error.sensitive_data}")
+        return jsonify({"status": "error", "error_type": "SensitiveDataError", "message": error.message,"sensitive_data": error.sensitive_data}), 400

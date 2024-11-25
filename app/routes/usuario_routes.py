@@ -19,10 +19,8 @@ def get_all_users():
 def get_by_id_user(id):
     return UserController.get_by_id(id)
 
-# Cria um novo usuário - somente administradores
+# Cria um novo usuário 
 @usuario_routes.route('/users', methods=['POST'])
-@jwt_required
-@admin_required
 def create_user():
     return UserController.create()
 

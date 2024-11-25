@@ -1,9 +1,10 @@
 # app/service/empresa_service.py:
 import logging
 from marshmallow import ValidationError
-from app.repositories.empresa_repository import CompanyRepository
+from app.repositories.empresa_repository import CompanyRepository 
 from app.validators.empresa_validator import CompanySchema
 from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError
+from validate_docbr import CNPJ as CNPJValidator
 
 # Configuração do logger
 logger = logging.getLogger(__name__)
@@ -18,6 +19,9 @@ class CompanyService:
             data['nome_fantasia'] = data['nome_fantasia'].lower()
         if 'email' in data:
             data['email'] = data['email'].lower()
+        if 'cnpj' in data:
+            cnpj_validator = CNPJValidator()
+            data['cnpj'] = cnpj_validator.mask(data['cnpj'])    
         return data
 
     def get_all(self):
@@ -27,103 +31,132 @@ class CompanyService:
             logger.info("Empresas obtidas com sucesso.")
             return empresas
         except Exception as e:
-            logger.error("Erro ao buscar todas as empresas: %s", e)
-            raise InternalServerError("Erro ao buscar todas as empresas.")
+            logger.error(f"Erro inesperado ao buscar empresas: {e}")
+            raise InternalServerError("Erro inesperado ao buscar empresas.")
 
     def get_by_id(self, company_id):
         """Busca uma empresa específica pelo ID."""
         try:
+            if not company_id or not isinstance(company_id, str):
+                raise ValidationError(field="company_id", message="ID inválido.")
+
             empresa = CompanyRepository.get_by_id(company_id)
             if not empresa:
-                logger.warning("Empresa com ID %s não encontrada.", company_id)
+                logger.warning(f"Empresa com ID {company_id} não encontrada.")
                 raise NotFoundError(resource="Empresa", message="Empresa não encontrada.")
-            logger.info("Empresa com ID %s obtida com sucesso.", company_id)
+            
+            logger.info(f"Empresa com ID {company_id} encontrada com sucesso.")
             return empresa
+        except NotFoundError:
+            raise
         except Exception as e:
-            logger.error("Erro ao buscar empresa com ID %s: %s", company_id, e)
-            raise InternalServerError("Erro ao buscar empresa.")
+            logger.error(f"Erro inesperado ao buscar empresa {company_id}: {e}")
+            raise InternalServerError("Erro inesperado ao buscar empresa.")
 
     def create(self, data):
         """Cria uma nova empresa, garantindo que o CNPJ e e-mail sejam únicos."""
         try:
-            # Normaliza os dados
-            empresa_data = self._normalize_data(data)
+            if not data or not isinstance(data, dict):
+                raise ValidationError(field="data", message="Dados de entrada inválidos.")
 
-            # Verifica se o CNPJ ou e-mail já estão cadastrados
-            if CompanyRepository.get_by_cnpj(empresa_data['cnpj']):
-                logger.warning("CNPJ já cadastrado: %s", empresa_data['cnpj'])
+            normalized_data = self._normalize_data(data)            
+
+            # verifica se o CNPJ ou e-mail já estão cadastrados
+            if CompanyRepository.get_by_cnpj(normalized_data['cnpj']):
+                logger.warning(f"CNPJ já cadastrado: {normalized_data['cnpj']}")
                 raise ConflictError(resource="Empresa", message="CNPJ já cadastrado.")
-            if CompanyRepository.get_by_email_empresa(empresa_data['email']):
-                logger.warning("E-mail já cadastrado: %s", empresa_data['email'])
+            if CompanyRepository.get_by_email(normalized_data['email']):
+                logger.warning(f"E-mail já cadastrado: {normalized_data['email']}")
                 raise ConflictError(resource="Empresa", message="E-mail já cadastrado.")
 
-            # Valida os dados com o schema
-            empresa_data = self.schema.load(empresa_data)
+            # valida os dados com o schema
+            empresa_data = self.schema.load(normalized_data)
 
-            # Cria a empresa no banco de dados
+            # cria a empresa no banco de dados
             empresa = CompanyRepository.create(empresa_data)
-            logger.info("Empresa criada com sucesso: %s", empresa)
+            logger.info(f"Empresa criada com sucesso: ID {empresa.id}")
             return empresa
         except ValidationError as err:
-            logger.warning("Erro na validação dos dados da empresa: %s", err.messages)
-            raise ValidationError(f"Erro na validação: {err.messages}")
+            logger.warning(f"Erro na validação de entrada: {err.messages}")
+            raise
+        except ConflictError:
+            raise
         except Exception as e:
-            logger.error("Erro ao criar empresa: %s", e)
-            raise InternalServerError("Erro ao criar empresa.")
+            logger.error(f"Erro inesperado ao criar empresa: {e}")
+            raise InternalServerError("Erro inesperado ao criar empresa.")
 
     def update(self, company_id, data):
         """Atualiza os dados de uma empresa."""
         try:
-            empresa = CompanyRepository.get_by_id(company_id)
+            if not company_id or not isinstance(company_id, str):
+                raise ValidationError(field="company_id", message="ID inválido.")
+            if not data or not isinstance(data, dict):
+                raise ValidationError(field="data", message="Dados inválidos para atualização.")
+            
+            empresa = self.get_by_id(company_id)
             if not empresa:
-                logger.warning("Empresa com ID %s não encontrada.", company_id)
+                logger.warning(f"Empresa com ID {company_id} não encontrada.")
                 raise NotFoundError(resource="Empresa", message="Empresa não encontrada.")
 
-            # Normaliza os dados
+            # normaliza os dados
             updated_data = self._normalize_data(data)
 
-            # Se o CNPJ foi alterado, valida e verifica se já está cadastrado
+            # se o CNPJ foi alterado, valida e verifica se já está cadastrado
             if 'cnpj' in updated_data and updated_data['cnpj'] != empresa.cnpj:
                 if CompanyRepository.get_by_cnpj(updated_data['cnpj']):
-                    logger.warning("CNPJ já cadastrado: %s", updated_data['cnpj'])
+                    logger.warning(f"CNPJ já cadastrado: {updated_data['cnpj']}")
                     raise ConflictError(resource="Empresa", message="CNPJ já cadastrado.")
 
-            # Se o e-mail foi alterado, verifica se já está cadastrado
+            # se o e-mail foi alterado, verifica se já está cadastrado
             if 'email' in updated_data and updated_data['email'] != empresa.email:
-                if CompanyRepository.get_by_email_empresa(updated_data['email']):
-                    logger.warning("E-mail já cadastrado: %s", updated_data['email'])
+                if CompanyRepository.get_by_email(updated_data['email']):
+                    logger.warning(f"E-mail já cadastrado: {updated_data['email']}")
                     raise ConflictError(resource="Empresa", message="E-mail já cadastrado.")
 
-            # Valida os dados com o schema
+            # valida os dados com o schema
             updated_data = self.schema.load(updated_data, partial=True)
 
-            # Atualiza os atributos da empresa
+            # atualiza os atributos da empresa
             for key, value in updated_data.items():
                 setattr(empresa, key, value)
 
-            # Salva a atualização no repositório
-            empresa = CompanyRepository.update(empresa)
-            logger.info("Empresa com ID %s atualizada com sucesso.", company_id)
-            return empresa
+            # salva a atualização no repositório
+            updated_empresa = CompanyRepository.update(empresa)
+            logger.info(f"Empresa com ID {company_id} atualizada com sucesso.")
+            return updated_empresa
+        except NotFoundError as e:
+            # repropaga o erro específico para tratamento externo
+            logger.warning(f"[NotFoundError] {e}")
+            raise
+        except ConflictError as e:
+            # repropaga conflitos de dados
+            logger.warning(f"[ConflictError] {e}")
+            raise
         except ValidationError as err:
-            logger.warning("Erro na validação dos dados da empresa: %s", err.messages)
-            raise ValidationError(f"Erro na validação: {err.messages}")
+             # tratamento para erros de validação
+            logger.warning(f"[ValidationError] {err.messages}")
+            raise ValidationError(err.messages)
         except Exception as e:
-            logger.error("Erro ao atualizar empresa com ID %s: %s", company_id, e)
-            raise InternalServerError("Erro ao atualizar empresa.")
+            logger.error(f"Erro inesperado ao atualizar empresa {company_id}: {e}")
+            raise InternalServerError("Erro inesperado ao atualizar empresa.")
+
 
     def delete(self, company_id):
         """Remove uma empresa pelo ID."""
         try:
+            if not company_id or not isinstance(company_id, str):
+                raise ValidationError(field="company_id", message="ID inválido.")
+            
             empresa = CompanyRepository.get_by_id(company_id)
             if not empresa:
-                logger.warning("Tentativa de deletar empresa não encontrada: ID %s", company_id)
+                logger.warning(f"Tentativa de deletar empresa com ID {company_id} não encontrada.")
                 raise NotFoundError(resource="Empresa", message="Empresa não encontrada.")
+            
             CompanyRepository.delete(company_id)
-            logger.info("Empresa com ID %s deletada com sucesso.", company_id)
+            logger.info(f"Empresa {company_id} deletada com sucesso.")
             return {"message": "Empresa deletada com sucesso."}
         except NotFoundError:
             raise
         except Exception as e:
-            logger.error("Erro ao deletar empresa com ID %s: %s", company_id, e)
-            raise InternalServerError("Erro ao deletar empresa.")
+            logger.error(f"Erro inesperado ao deletar empresa {company_id}: {e}")
+            raise InternalServerError("Erro inesperado ao deletar empresa.")

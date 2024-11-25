@@ -22,6 +22,7 @@ class UserRepository:
             logger.error(f"Erro ao buscar todos os usuários: {e}")
             raise InternalServerError(message="Erro ao buscar usuários.")
 
+
     # Retorna um usuário específico pelo ID.
     @staticmethod
     def get_by_id(id):
@@ -36,19 +37,22 @@ class UserRepository:
             logger.error(f"Erro ao buscar usuário com ID {id}: {e}")
             raise InternalServerError(message="Erro ao buscar usuário pelo ID.")
 
-    # Retorna um usuário específico pelo email.
+
+
     @staticmethod
     def get_by_email(email):
         try:
             usuario = User.query.filter_by(email=email).first()
             if not usuario:
-                logger.warning(f"Usuário com email {email} não encontrado.")
-                raise NotFoundError(resource="Usuario", message="Usuário com esse email não encontrado.")
+                logger.info(f"Usuário com email {email} não encontrado.")
+                return None  # retorna None ao invés de levantar NotFoundError
             logger.info(f"Usuário com email {email} encontrado com sucesso.")
             return usuario
         except SQLAlchemyError as e:
             logger.error(f"Erro ao buscar usuário com email {email}: {e}")
             raise InternalServerError(message="Erro ao buscar usuário pelo email.")
+        
+            
 
     # Adiciona um novo usuário ao banco de dados.
     @staticmethod
@@ -68,6 +72,7 @@ class UserRepository:
             logger.error(f"Erro ao criar usuário: {e}")
             raise InternalServerError(message="Erro ao criar usuário.")
 
+
     # Atualiza um usuário existente no banco de dados.
     @staticmethod
     def update(user):
@@ -79,6 +84,7 @@ class UserRepository:
             db.session.rollback()
             logger.error(f"Erro ao atualizar usuário com ID {user.id}: {e}")
             raise InternalServerError(message="Erro ao atualizar usuário.")
+
 
     # Remove um usuário do banco de dados com base no ID.
     @staticmethod

@@ -31,6 +31,7 @@ class ProjectRepository:
     @staticmethod
     def get_by_id(id):
         try:
+            logger.info(f"Tentando buscar projeto com ID: {id} (tipo: {type(id)})")
             projeto = db.session.query(Project).filter_by(id=id).options(
                 joinedload(Project.avaliador),
                 joinedload(Project.empresa),
@@ -79,7 +80,7 @@ class ProjectRepository:
     @staticmethod
     def delete(id):
         try:
-            projeto = ProjectRepository.get_by_id(id)  # Garante que o projeto existe
+            projeto = ProjectRepository.get_by_id(id)  
             db.session.delete(projeto)
             db.session.commit()
             logger.info(f"Projeto com ID {id} deletado com sucesso.")

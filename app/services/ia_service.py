@@ -1,9 +1,11 @@
 # app/service/ia_service.py:
 import openai
+import requests
+from io import BytesIO
 import os
 import time
 import logging
-from app.services.projeto_service import ProjectService
+from app.repositories.projeto_repository import ProjectRepository
 from app.utils.text_extractor import TextExtractor
 from app.erros.custom_errors import NotFoundError, ValidationError, InternalServerError
 
@@ -20,29 +22,55 @@ class IaService:
     ]
     MAX_RETRIES = 3
 
-    def __init__(self, projeto_service=ProjectService()):
-        self.projeto_service = projeto_service
+    def __init__(self, projeto_repository=ProjectRepository()):
+        self.projeto_repository = projeto_repository
 
     def obter_texto_projeto(self, project_id):
         """Obtém e extrai o texto do arquivo do projeto para análise."""
-        projeto = self.projeto_service.get_by_id(project_id)
+        projeto = self.projeto_repository.get_by_id(project_id)
         if not projeto:
             logger.warning(f"Projeto com ID {project_id} não encontrado.")
             raise NotFoundError("Projeto", "Projeto não encontrado")
         
-        # extrai o texto com base no tipo de arquivo (PDF, DOC ou DOCX)
-        file_content = projeto.arquivo.read()  
-        if projeto.arquivo.name.endswith('.pdf'):
-            texto = TextExtractor.extract_text_pdf(file_content)
-        elif projeto.arquivo.name.endswith(('.doc', '.docx')):
-            texto = TextExtractor.extract_text_docx(file_content)
-        else:
-            raise ValidationError("arquivo", "Tipo de arquivo não suportado para análise.")
+        # Verifica se `projeto.arquivo` é uma URL válida
+        if not projeto.arquivo or not isinstance(projeto.arquivo, str):
+            logger.error(f"O caminho do arquivo é inválido para o projeto {project_id}.")
+            raise ValidationError("arquivo", "Caminho do arquivo inválido.")
         
-        if not texto:
-            raise ValidationError("arquivo", "O arquivo do projeto não contém texto válido para análise.")
-        
-        return texto
+        try:
+            # Faz o download do arquivo
+            response = requests.get(projeto.arquivo)
+            if response.status_code != 200:
+                logger.error(f"Erro ao baixar o arquivo: {response.status_code}")
+                raise ValidationError("arquivo", "Não foi possível baixar o arquivo do projeto.")
+
+            file_content = BytesIO(response.content)  # Converte para BytesIO
+
+            # Verifica a extensão e extrai o texto
+            if projeto.arquivo.endswith('.pdf'):
+                texto = TextExtractor.extract_text_pdf(file_content.read())
+            elif projeto.arquivo.endswith(('.doc', '.docx')):
+                texto = TextExtractor.extract_text_docx(file_content.read())
+            else:
+                logger.error(f"Tipo de arquivo não suportado: {projeto.arquivo}")
+                raise ValidationError("arquivo", "Tipo de arquivo não suportado para análise.")
+            
+            if not texto:
+                logger.error(f"O arquivo do projeto {project_id} não contém texto válido.")
+                raise ValidationError("arquivo", "O arquivo do projeto não contém texto válido para análise.")
+            
+            return texto
+
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Erro ao acessar o arquivo do projeto: {e}")
+            raise ValidationError("arquivo", "Erro ao acessar o arquivo do projeto.")
+        except ValidationError:  # Certifique-se de propagar erros de validação
+            raise
+        except Exception as e:
+            logger.error(f"Erro ao processar o arquivo do projeto {project_id}: {e}")
+            raise InternalServerError("Erro ao processar o arquivo do projeto.")
+
+
 
     def enviar_para_analise(self, projeto_texto):
         """Envia o texto do projeto para a API do ChatGPT para avaliação."""

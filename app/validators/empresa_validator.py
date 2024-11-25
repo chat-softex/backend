@@ -11,7 +11,7 @@ class CompanySchema(Schema):
     )
     cnpj = fields.String(
         required=True,
-        validate=validate.Length(equal=18)  # Formato esperado: XX.XXX.XXX/XXXX-XX
+        validate=validate.Length(max=18)  # no maximo 18 caracteres com pontuaçoes
     )
     email = fields.Email(
         required=True,
