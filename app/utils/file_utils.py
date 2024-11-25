@@ -1,88 +1,159 @@
-# app/utils/file_utils.py
+import tempfile
 import os
 import re
 import logging
 from io import BytesIO
+from nh3 import clean_text
+from validate_docbr import CPF, CNPJ
 from app.services.firebase_service import FirebaseService
-from app.utils.text_extractor import TextExtractor  # Importação de TextExtractor
-from app.erros.custom_errors import InternalServerError, ValidationError  # Adicionando ValidationError
+from app.utils.text_extractor import TextExtractor
+from app.erros.custom_errors import (
+    InternalServerError, ValidationError, ConflictError, NotFoundError
+)
 
 logger = logging.getLogger(__name__)
 
+
 class FileUtils:
-    MAX_CHARACTERS = 25000  # Limite de caracteres
+    MAX_CHARACTERS = 25000  # limite de caracteres
     SENSITIVE_PATTERNS = {
-        "CNPJ": r"\b\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}\b",
-        "CPF": r"\b\d{3}\.\d{3}\.\d{3}-\d{2}\b",
-        "Inscrição Estadual": r"\binscrição estadual\b|\bie\b",
-        "Inscrição Municipal": r"\binscrição municipal\b|\bim\b",
+        "CNPJ": r"(?i)\b(?:CNPJ[: ]*)?(\d{2}[.\s]?\d{3}[.\s]?\d{3}[\/\s]?\d{4}[-.\s]?\d{2})\b",
+        "CPF": r"(?i)\b(?:cpf[\s:.]*)?(\d{3}[\s.-]?\d{3}[\s.-]?\d{3}[\s.-]?\d{2})\b",
         "Email": r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
-        "CEP": r"\b\d{5}-\d{3}\b",
-        "Logradouro": r"\b(rua|avenida|logradouro|estrada|praça)\b\s+\w+",
-        "Número": r"\bnúmero\s*\d+|\bn°\s*\d+",
-        "Bairro": r"\bbairro\s+\w+",
-        "Cidade": r"\bcidade\s+\w+",
-        "UF": r"\b(?:AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b",
+        "Inscrição Estadual": r"\binscrição estadual[: ]?\d+\b",
+        "Inscrição Municipal": r"\binscrição municipal[: ]?\d+\b",
     }
 
-    def _remove_sensitive_data(self, text):
-        """Remove dados sensíveis do texto usando os padrões definidos."""
-        for label, pattern in self.SENSITIVE_PATTERNS.items():
-            text = re.sub(pattern, "[DADO REMOVIDO]", text, flags=re.IGNORECASE)
-        return text
+    def __init__(self):
+        self.cpf_validator = CPF()
+        self.cnpj_validator = CNPJ()
+
+    @staticmethod
+    def clean_text(text):
+        """Remove espaços extras e caracteres especiais não necessários."""
+        text = re.sub(r"\s+", " ", text)
+        return text.strip().lower()
+
+    def _validate_cpf(self, cpf):
+        """Valida CPF usando a biblioteca validate-docbr."""
+        return self.cpf_validator.validate(cpf)
+
+    def _validate_cnpj(self, cnpj):
+        """Valida CNPJ usando a biblioteca validate-docbr."""
+        return self.cnpj_validator.validate(cnpj)
+
+    def _contains_sensitive_data(self, text):
+        """Valida padrões sensíveis no texto extraído."""
+        try:
+            text = self.clean_text(text)
+            sensitive_data = {}
+
+            for label, pattern in self.SENSITIVE_PATTERNS.items():
+                matches = re.findall(pattern, text, flags=re.IGNORECASE)
+                if matches:
+                    # validação adicional para CPFs e CNPJs
+                    if label == "CPF":
+                        valid_cpfs = [cpf for cpf in matches if self._validate_cpf(cpf)]
+                        if valid_cpfs:
+                            sensitive_data[label] = valid_cpfs
+                    elif label == "CNPJ":
+                        valid_cnpjs = [cnpj for cnpj in matches if self._validate_cnpj(cnpj)]
+                        if valid_cnpjs:
+                            sensitive_data[label] = valid_cnpjs
+                    else:
+                        sensitive_data[label] = matches
+
+            return sensitive_data
+
+        except ValidationError as ve:
+            logger.warning(f"Erro de validação de dados sensíveis: {ve.message}")
+            raise   # propaga a exceção para que o chamador possa tratar.
+        except Exception as e:
+            # logger.error(f"Erro inesperado ao validar dados sensíveis no texto: {e}", exc_info=True)
+            logger.error(f"Erro inesperado ao validar dados sensíveis no texto: {e}")
+            raise ValidationError("Erro inesperado ao validar dados sensíveis.")
+
 
     def _is_within_character_limit(self, text):
         """Verifica se o texto está dentro do limite de caracteres."""
         return len(text) <= self.MAX_CHARACTERS
 
+    def _validate_text(self, text):
+        """Valida texto extraído para dados sensíveis e limite de caracteres."""
+        try:
+            sensitive_data = self._contains_sensitive_data(text)
+            if sensitive_data:
+                logger.warning(f"Documento contém dados sensíveis: {sensitive_data}")
+                raise ValidationError(field="arquivo", message=f"Documento contém dados sensíveis: {sensitive_data}")
+            if not self._is_within_character_limit(text):
+                logger.warning("Documento excede o limite de caracteres.")
+                raise ValidationError(field="arquivo", message="Documento excede o limite de caracteres permitido.")
+            return True
+        except ValidationError as ve:
+            logger.warning(f"Erro de validação de texto: {ve.message}")
+            raise 
+        except Exception as e:
+            logger.error(f"Erro inesperado durante validação de texto: {e}")
+            raise InternalServerError("Erro inesperado ao validar o texto.")
+
     def is_valid_pdf(self, file):
-        """Verifica se o PDF contém texto útil dentro do limite de caracteres e remove dados sensíveis."""
+        """Valida um arquivo PDF."""
         try:
             text = TextExtractor.extract_text_pdf(file.read())
-            text = self._remove_sensitive_data(text)
-            if not self._is_within_character_limit(text):
-                raise ValidationError("file", "Documento excede o limite de caracteres permitido.")
-            return bool(text.strip())
-        except Exception as e:
-            logger.error(f"Erro ao validar PDF: {e}")
-            raise InternalServerError("Erro ao processar o arquivo PDF.")
+            logger.info(f"Texto extraído do PDF: {text}")
+            self._validate_text(text)
+            return True
+        except ValidationError as ve:
+            logger.warning(f"Validação falhou para PDF: {ve.message}")
+            raise 
+        except InternalServerError as e:
+            logger.error(f"Erro interno ao validar PDF: {e.message}")
+            raise
         finally:
             file.seek(0)
 
     def is_valid_docx(self, file):
-        """Verifica se o DOCX contém texto útil dentro do limite de caracteres e remove dados sensíveis."""
+        """Valida um arquivo DOCX."""
         try:
             text = TextExtractor.extract_text_docx(file.read())
-            text = self._remove_sensitive_data(text)
-            if not self._is_within_character_limit(text):
-                raise ValidationError("file", "Documento excede o limite de caracteres permitido.")
-            return bool(text.strip())
-        except Exception as e:
-            logger.error(f"Erro ao validar DOCX: {e}")
-            raise InternalServerError("Erro ao processar o arquivo DOCX.")
+            logger.info(f"Texto extraído do DOCX: {text}")
+            self._validate_text(text)
+            return True
+        except ValidationError as ve:
+            logger.warning(f"Validação falhou para DOCX: {ve.message}")
+            raise 
+        except InternalServerError as e:
+            logger.error(f"Erro interno ao validar DOCX: {e.message}")
+            raise
         finally:
             file.seek(0)
 
     def is_valid_document(self, file, filename):
-        """Determina a validação com base na extensão do arquivo."""
-        extension = filename.rsplit('.', 1)[1].lower()
-        if extension == 'pdf':
-            return self.is_valid_pdf(file)
-        elif extension in {'doc', 'docx'}:
-            return self.is_valid_docx(file)
-        else:
-            raise ValidationError("file", "Formato de arquivo não permitido.")
+        """Valida documentos com base na extensão."""
+        try:
+            extension = filename.rsplit('.', 1)[1].lower()
+            if extension == 'pdf':
+                return self.is_valid_pdf(file)
+            elif extension in {'doc', 'docx'}:
+                return self.is_valid_docx(file)
+            else:
+                raise ValidationError(field="arquivo", message="Formato de arquivo não permitido.")
+        except ValidationError as ve:
+            logger.warning(f"Erro de validação detectado: {ve.message}")
+            raise 
+        except InternalServerError as e:
+            logger.error(f"Erro interno ao validar documento: {e.message}")
+            raise
 
     def upload_to_firebase(self, file, filename):
         """Usa o FirebaseService para fazer upload e obter a URL pública."""
         try:
-            file_path = f"/tmp/{filename}"
-            with open(file_path, 'wb') as f:
-                f.write(file.read())
-            file.seek(0)
-
-            public_url = FirebaseService.upload_file(file_path, filename)
-            os.remove(file_path)
+            with tempfile.NamedTemporaryFile(delete=False, suffix=f"_{filename}") as temp_file:
+                temp_file.write(file.read())  # salva o conteúdo no arquivo temporário
+                temp_file_path = temp_file.name
+            
+            public_url = FirebaseService.upload_file(temp_file_path, filename)
+            os.remove(temp_file_path)  # remove o arquivo temporário após o upload
             return public_url
         except Exception as e:
             logger.error(f"Erro ao fazer upload para o Firebase: {e}")

@@ -1,6 +1,6 @@
-# app/utils/encryption.py:
-from cryptography.fernet import Fernet, InvalidToken
+import binascii
 import os
+from cryptography.fernet import Fernet, InvalidToken
 from app.erros.custom_errors import InternalServerError, ValidationError
 
 class Encryption:
@@ -13,11 +13,15 @@ class Encryption:
     def encrypt(self, data):
         try:
             return self.cipher.encrypt(data.encode())
-        except Exception as e:
+        except Exception:
             raise InternalServerError("Erro ao criptografar os dados.")
 
     def decrypt(self, encrypted_data):
         try:
+            # detecta e converte hexadecimal para bytes
+            if isinstance(encrypted_data, str) and encrypted_data.startswith("\\x"):
+                encrypted_data = binascii.unhexlify(encrypted_data[2:])  # remove o prefixo \x e converte para bytes
+
             return self.cipher.decrypt(encrypted_data).decode()
         except InvalidToken:
             raise ValidationError(field="data", message="Dados criptografados inválidos.")

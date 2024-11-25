@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 
 class JWTManager:
     SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default_secret_key')
-    ACCESS_EXPIRATION = int(os.getenv('ACCESS_EXPIRATION', 60))  # Minutos, padrão 60
-    RENEWAL_THRESHOLD = int(os.getenv('RENEWAL_THRESHOLD', 5))   # Minutos antes do vencimento para renovação
+    ACCESS_EXPIRATION = int(os.getenv('ACCESS_EXPIRATION', 60))  # minutos(padrão 60)
+    RENEWAL_THRESHOLD = int(os.getenv('RENEWAL_THRESHOLD', 5))   # minutos antes do vencimento para renovação
 
     @staticmethod
     def create_token(data, expires_in=None):
@@ -23,7 +23,7 @@ class JWTManager:
         try:
             payload = jwt.decode(token, JWTManager.SECRET_KEY, algorithms=['HS256'])
             expiration = datetime.fromtimestamp(payload['exp'])
-            # Reemissão de token se a expiração estiver próxima
+            # reemissão de token se a expiração estiver próxima
             if (expiration - datetime.utcnow()).total_seconds() < JWTManager.RENEWAL_THRESHOLD * 60:
                 new_token = JWTManager.create_token(payload['data'])
                 payload['new_token'] = new_token

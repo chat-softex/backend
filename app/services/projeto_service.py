@@ -31,121 +31,161 @@ class ProjectService:
     def get_all(self):
         """Retorna todos os projetos cadastrados."""
         try:
-            projetos = ProjectSchema.get_all()
+            projetos = ProjectRepository.get_all()
             logger.info("Projetos obtidos com sucesso.")
             return projetos
         except Exception as e:
-            logger.error(f"Erro ao buscar projetos: {e}")
-            raise InternalServerError("Erro ao obter projetos.")
+            logger.error(f"Erro inesperado ao buscar projetos: {e}")
+            raise InternalServerError("Erro inesperado ao buscar projetos.")
 
     def get_by_id(self, project_id):
         """Busca um projeto específico pelo ID."""
         try:
+            if not project_id or not isinstance(project_id, str):
+                raise ValidationError(field="project_id", message="ID inválido.")
+            
             projeto = ProjectRepository.get_by_id(project_id)
+            if not projeto:
+                logger.warning(f"Projeto com ID {project_id} não encontrado.")
+                raise NotFoundError(resource="Projeto", message="Projeto não encontrado.")       
             logger.info(f"Projeto {project_id} encontrado com sucesso.")
             return projeto
         except NotFoundError:
-            logger.warning(f"Projeto com ID {project_id} não encontrado.")
             raise
         except Exception as e:
-            logger.error(f"Erro ao buscar projeto {project_id}: {e}")
-            raise InternalServerError("Erro ao buscar projeto.")
+            logger.error(f"Erro inesperado ao buscar projeto {project_id}: {e}")
+            raise InternalServerError("Erro inesperado ao buscar projeto.")
 
+    
     def create(self, data, file):
-        """Cria um novo projeto e valida o arquivo (PDF, DOC, DOCX) para o Firebase."""
-        if not self._is_allowed_file(file.filename):
-            logger.warning("Arquivo com extensão não permitida.")
-            raise ValidationError("Somente arquivos PDF, DOC e DOCX são permitidos.")
-
-        # Verifica se o documento é válido e não possui dados sensíveis
-        if not self.file_utils.is_valid_document(file, file.filename):
-            logger.warning("Documento inválido, contém dados sensíveis ou ultrapassa o limite de caracteres.")
-            raise ValidationError("O documento deve conter texto válido, não possuir dados sensíveis e ter no máximo 25.000 caracteres.")
-
         try:
-            projeto_data = self._normalize_data(data)
-            projeto_data = self.schema.load(projeto_data)
+            if not data or not isinstance(data, dict):
+                raise ValidationError(field="data", message="Dados de entrada inválidos.")
 
-            # Faz o upload do documento para o Firebase e obtém a URL pública
-            file_url = self.file_utils.upload_to_firebase(file, file.filename)
-            projeto_data['arquivo'] = file_url
+            if not file or not self._is_allowed_file(file.filename):
+                raise ValidationError(field="arquivo", message="Somente arquivos PDF, DOC e DOCX são permitidos.")
 
-            projeto = ProjectRepository.create(projeto_data)
-            logger.info(f"Projeto criado com sucesso: ID {projeto.id}")
-            return projeto
-        except ValidationError as err:
-            logger.warning(f"Erro na validação dos dados do projeto: {err.messages}")
-            raise ValidationError(f"Erro na validação: {err.messages}")
-        except Exception as e:
-            logger.error(f"Erro ao criar projeto: {e}")
-            raise InternalServerError("Erro ao criar projeto.")
-
-    def update(self, project_id, data, file=None):
-        """Atualiza os dados de um projeto, com upload opcional de novo arquivo."""
-        projeto = self.get_by_id(project_id)
-
-        if file:
-            if not self._is_allowed_file(file.filename):
-                logger.warning("Arquivo com extensão não permitida para atualização.")
-                raise ValidationError("Somente arquivos PDF, DOC e DOCX são permitidos.")
-
+            # Valida o conteúdo do arquivo com if explícito
             if not self.file_utils.is_valid_document(file, file.filename):
-                logger.warning("Documento inválido, contém dados sensíveis ou ultrapassa o limite de caracteres.")
-                raise ValidationError("O documento deve conter texto válido, não possuir dados sensíveis e ter no máximo 25.000 caracteres.")
+                logger.warning("Documento contém dados sensíveis.")
+                raise ValidationError(field="arquivo", message="Documento contém dados sensíveis.")
+
+            # try:
+            #     self.file_utils.is_valid_document(file, file.filename)
+            # except ValidationError as ve:
+            #     logger.warning(f"Erro na validação do arquivo: {ve.message}")
+            #     raise ve
 
             file_url = self.file_utils.upload_to_firebase(file, file.filename)
             data['arquivo'] = file_url
 
-        try:
-            updated_data = self._normalize_data(data)
-            updated_data = self.schema.load(updated_data, partial=True)
+            normalized_data = self._normalize_data(data)
+            projeto_data = self.schema.load(normalized_data)
 
-            for key, value in updated_data.items():
-                setattr(projeto, key, value)
+            projeto = ProjectRepository.create(projeto_data)
+            logger.info(f"Projeto criado com sucesso: ID {projeto.id}")
+            return projeto
+
+        except ValidationError as err:
+            logger.warning(f"Erro na validação de entrada: {err.messages}")
+            raise 
+        except ConflictError as e:
+            logger.warning(f"Conflito ao criar projeto: {e.message}")
+            raise
+        except Exception as e:
+            logger.error(f"Erro inesperado ao criar projeto: {e}")
+            raise InternalServerError("Erro ao criar projeto.")
+
+    def update(self, project_id, data=None, file=None):
+        try:
+            if not project_id or not isinstance(project_id, str):
+                raise ValidationError(field="project_id", message="ID inválido.")
+
+            projeto = self.get_by_id(project_id)
+
+            if file:
+                if not self._is_allowed_file(file.filename):
+                    raise ValidationError(field="arquivo", message="Somente arquivos PDF, DOC e DOCX são permitidos.")
+
+                # try:
+                #     self.file_utils.is_valid_document(file, file.filename)
+                # except ValidationError as ve:
+                #     logger.warning(f"Erro de validação do arquivo: {ve.message}")
+                #     raise ve
+                
+                # Valida o conteúdo do arquivo com if explícito
+                if not self.file_utils.is_valid_document(file, file.filename):
+                    logger.warning("Documento contém dados sensíveis.")
+                    raise ValidationError(field="arquivo", message="Documento contém dados sensíveis.")
+
+                file_url = self.file_utils.upload_to_firebase(file, file.filename)
+                data = data or {}
+                data['arquivo'] = file_url
+
+            if data:
+                normalized_data = self._normalize_data(data)
+                projeto_data = self.schema.load(normalized_data, partial=True)
+                for key, value in projeto_data.items():
+                    setattr(projeto, key, value)
 
             updated_projeto = ProjectRepository.update(projeto)
             logger.info(f"Projeto {project_id} atualizado com sucesso.")
             return updated_projeto
+
+        except NotFoundError as e:
+            logger.warning(f"Projeto não encontrado para atualização: {e}")
+            raise
         except ValidationError as err:
-            logger.warning(f"Erro na validação dos dados do projeto: {err.messages}")
-            raise ValidationError(f"Erro na validação: {err.messages}")
+            logger.warning(f"Erro na validação de entrada: {err.messages}")
+            raise
         except Exception as e:
-            logger.error(f"Erro ao atualizar projeto {project_id}: {e}")
+            logger.error(f"Erro inesperado ao atualizar projeto {project_id}: {e}")
             raise InternalServerError("Erro ao atualizar projeto.")
 
-        
-
     def update_status(self, project_id, novo_status):
-        """Atualiza o status de um projeto."""
-        if novo_status not in ['em avaliação', 'aprovado', 'reprovado']:
-            logger.warning(f"Status inválido: {novo_status}")
-            raise ValidationError(field="status", message="Status deve ser 'em avaliação', 'aprovado' ou 'reprovado'.")
-
-        projeto = self.get_by_id(project_id)
         try:
+            if novo_status not in ['em avaliação', 'aprovado', 'reprovado']:
+                raise ValidationError(field="status", message="Status inválido.")
+
+            projeto = self.get_by_id(project_id)
             projeto.status = novo_status
+
             updated_projeto = ProjectRepository.update(projeto)
             logger.info(f"Status do projeto {project_id} atualizado para '{novo_status}'.")
             return updated_projeto
+
+        except NotFoundError:
+            logger.warning(f"Projeto não encontrado para atualização de status: ID {project_id}")
+            raise
+        except ValidationError as err:
+            logger.warning(f"Erro de validação do status: {err.message}")
+            raise
         except Exception as e:
-            logger.error(f"Erro ao atualizar status do projeto {project_id}: {e}")
-            raise InternalServerError("Erro ao atualizar o status do projeto.")   
+            logger.error(f"Erro inesperado ao atualizar status do projeto {project_id}: {e}")
+            raise InternalServerError("Erro ao atualizar o status do projeto.")
+    
 
 
     def delete(self, project_id):
         """Remove um projeto pelo ID."""
         try:
+            if not project_id or not isinstance(project_id, str):
+                raise ValidationError(field="project_id", message="ID inválido.")
+
             projeto = ProjectRepository.get_by_id(project_id)
             if not projeto:
-                logger.warning("Tentativa de deletar projeto não encontrado: ID %s", project_id)
+                logger.warning(f"Tentativa de deletar projeto com ID {project_id} não encontrado.")
                 raise NotFoundError(resource="Projeto", message="Projeto não encontrado.")
             
             ProjectRepository.delete(project_id)
-            logger.info("Projeto com ID %s deletado com sucesso.", project_id)
+            logger.info(f"Projeto {project_id} deletado com sucesso.")
             return {"message": "Projeto deletado com sucesso."}
         except NotFoundError:
             raise
         except Exception as e:
-            logger.error("Erro ao deletar projeto com ID %s: %s", project_id, e)
-            raise InternalServerError("Erro ao deletar projeto.")
+            logger.error(f"Erro inesperado ao deletar projeto {project_id}: {e}")
+            raise InternalServerError("Erro inesperado ao deletar projeto.")
         
+
+
+

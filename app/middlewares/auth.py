@@ -20,7 +20,7 @@ def jwt_required(f):
             return ErrorHandler.handle_unauthorized_error(UnauthorizedError("Token é obrigatório"))
 
         try:
-            # Verifica se o token tem o prefixo 'Bearer'
+            # verificar se o token tem o prefixo 'Bearer'
             parts = token.split()
             if len(parts) == 2 and parts[0].lower() == "bearer":
                 token = parts[1]
@@ -34,7 +34,7 @@ def jwt_required(f):
                 logger.warning("Usuário não encontrado para o token fornecido.")
                 raise UnauthorizedError("Usuário não encontrado.")
                 
-            # Adiciona o novo token ao header da resposta se próximo de expirar
+            # adiciona o novo token ao header da resposta se próximo de expirar
             if 'new_token' in token_data:
                 g.new_token = token_data['new_token']
                 
