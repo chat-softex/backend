@@ -29,6 +29,8 @@ class UserController:
             usuario = UserService().get_by_id(str(id))  # converte para string
             logger.info(f"Usuário {id} encontrado.")
             return jsonify(usuario.to_dict()), 200
+        except ValidationError as e:
+            return ErrorHandler.handle_validation_error(e)
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
         except Exception as e:
@@ -90,6 +92,8 @@ class UserController:
             UserService().delete(str(id))  # converte para string
             logger.info(f"Usuário {id} deletado com sucesso.")
             return '', 204  # sem corpo de resposta
+        except ValidationError as e:
+            return ErrorHandler.handle_validation_error(e)
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
         except Exception as e:

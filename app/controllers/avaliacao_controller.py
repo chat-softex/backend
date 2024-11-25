@@ -29,6 +29,8 @@ class ReviewController:
             avaliacao = ReviewService().get_by_id(str(id))
             logger.info(f"Revisão {id} encontrado.")
             return jsonify(avaliacao.to_dict()), 200
+        except ValidationError as e:
+            return ErrorHandler.handle_validation_error(e)
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
         except Exception as e:
@@ -87,6 +89,8 @@ class ReviewController:
             ReviewService().delete(str(id))
             logger.info(f"Avaliação {id} deletada com sucesso.")
             return '', 204  # sem corpo de resposta
+        except ValidationError as e:
+            return ErrorHandler.handle_validation_error(e)
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
         except Exception as e:

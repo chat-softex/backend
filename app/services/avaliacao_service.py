@@ -1,11 +1,13 @@
 # app/service/avaliacao_service.py
 import logging
-from marshmallow import ValidationError
+import marshmallow
 from app.repositories.avaliacao_repository import ReviewRepository
 from app.repositories.projeto_repository import ProjectRepository
 from app.services.projeto_service import ProjectService
 from app.validators.avaliacao_validator import ReviewSchema
-from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError
+from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError, ValidationError
+from app.erros.error_handler import ErrorHandler
+
 import uuid
 from app.services.ia_service import IaService 
 
@@ -39,6 +41,8 @@ class ReviewService:
             
             logger.info(f"Avaliação {review_id} encontrada com sucesso.")
             return avaliacao
+        except ValidationError as err:
+            logger.warning(f"Erro na validação do ID: {err.message}")
         except NotFoundError:
             raise
         except Exception as e:
@@ -76,7 +80,10 @@ class ReviewService:
             data['feedback_qualitativo'] = feedback_qualitativo
 
             # validação final com todos os campos presentes
-            avaliacao_data = self.schema.load(data)
+            try:
+                avaliacao_data = self.schema.load(data)
+            except marshmallow.exceptions.ValidationError as marshmallow_error:
+                ErrorHandler.handle_marshmallow_errors(marshmallow_error.messages)
 
             # persiste no banco via repositório
             avaliacao = ReviewRepository.create(avaliacao_data)
@@ -84,7 +91,7 @@ class ReviewService:
             return avaliacao
 
         except ValidationError as err:
-            logger.warning(f"Erro na validação de entrada: {err.messages}")
+            logger.warning(f"Erro na validação de entrada: {err.message}")
             raise
         except NotFoundError as err:
             logger.warning(f"Projeto não encontrado: {err}")
@@ -108,7 +115,11 @@ class ReviewService:
 
             avaliacao = self.get_by_id(review_id)
 
-            updated_data = self.schema.load(data, partial=True)
+
+            try:
+                updated_data = self.schema.load(data, partial=True)
+            except marshmallow.exceptions.ValidationError as marshmallow_error:
+                ErrorHandler.handle_marshmallow_errors(marshmallow_error.messages)
 
             for key, value in updated_data.items():
                 setattr(avaliacao, key, value)
@@ -119,8 +130,8 @@ class ReviewService:
         
         except ValidationError as err:
              # tratamento para erros de validação
-            logger.warning(f"[ValidationError] {err.messages}")
-            raise ValidationError(err.messages)
+            logger.warning(f"[ValidationError] {err.message}")
+            raise 
         except NotFoundError:
             raise
         except Exception as e:
@@ -141,6 +152,8 @@ class ReviewService:
             ReviewRepository.delete(review_id)
             logger.info(f"Avaliação {review_id} deletada com sucesso.")
             return {"message": "Avaliação deletada com sucesso."}
+        except ValidationError as err:
+            logger.warning(f"Erro na validação do ID: {err.message}")
         except NotFoundError:
             raise
         except Exception as e:

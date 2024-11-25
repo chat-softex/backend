@@ -3,7 +3,7 @@ import logging
 from flask import jsonify
 from .custom_errors import (
     ValidationError, NotFoundError, UnauthorizedError, ExternalAPIError,
-    ConflictError, InternalServerError, InvalidTokenError, SensitiveDataError
+    ConflictError, InternalServerError, InvalidTokenError
 )
 
 # Configuração global de logging
@@ -53,7 +53,11 @@ class ErrorHandler:
         logger.error("[Exception] Erro inesperado", exc_info=error)
         return jsonify({"status": "error", "error_type": "Exception", "message": "Internal server error"}), 500
     
+
     @staticmethod
-    def handle_sensitive_data_error(error: SensitiveDataError):
-        logger.warning(f"[SensitiveDataError] Dados sensíveis detectados: {error.sensitive_data}")
-        return jsonify({"status": "error", "error_type": "SensitiveDataError", "message": error.message,"sensitive_data": error.sensitive_data}), 400
+    def handle_marshmallow_errors(errors):
+        """Converte erros de validação do Marshmallow para o formato personalizado."""
+        for field, messages in errors.items():
+            raise ValidationError(field=field, message=", ".join(messages))
+    
+

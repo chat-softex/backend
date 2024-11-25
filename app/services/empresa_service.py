@@ -1,10 +1,11 @@
 # app/service/empresa_service.py:
 import logging
-from marshmallow import ValidationError
+import marshmallow
 from app.repositories.empresa_repository import CompanyRepository 
 from app.validators.empresa_validator import CompanySchema
-from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError
+from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError, ValidationError
 from validate_docbr import CNPJ as CNPJValidator
+from app.erros.error_handler import ErrorHandler
 
 # Configuração do logger
 logger = logging.getLogger(__name__)
@@ -47,6 +48,8 @@ class CompanyService:
             
             logger.info(f"Empresa com ID {company_id} encontrada com sucesso.")
             return empresa
+        except ValidationError as err:
+            logger.warning(f"Erro na validação do ID: {err.message}")
         except NotFoundError:
             raise
         except Exception as e:
@@ -70,14 +73,17 @@ class CompanyService:
                 raise ConflictError(resource="Empresa", message="E-mail já cadastrado.")
 
             # valida os dados com o schema
-            empresa_data = self.schema.load(normalized_data)
+            try:
+                empresa_data = self.schema.load(normalized_data)
+            except marshmallow.exceptions.ValidationError as marshmallow_error:
+                ErrorHandler.handle_marshmallow_errors(marshmallow_error.messages)
 
             # cria a empresa no banco de dados
             empresa = CompanyRepository.create(empresa_data)
             logger.info(f"Empresa criada com sucesso: ID {empresa.id}")
             return empresa
         except ValidationError as err:
-            logger.warning(f"Erro na validação de entrada: {err.messages}")
+            logger.warning(f"Erro na validação de entrada: {err.message}")
             raise
         except ConflictError:
             raise
@@ -114,7 +120,11 @@ class CompanyService:
                     raise ConflictError(resource="Empresa", message="E-mail já cadastrado.")
 
             # valida os dados com o schema
-            updated_data = self.schema.load(updated_data, partial=True)
+            try:
+                updated_data = self.schema.load(updated_data, partial=True)
+            except marshmallow.exceptions.ValidationError as marshmallow_error:
+                ErrorHandler.handle_marshmallow_errors(marshmallow_error.messages)    
+                
 
             # atualiza os atributos da empresa
             for key, value in updated_data.items():
@@ -134,8 +144,8 @@ class CompanyService:
             raise
         except ValidationError as err:
              # tratamento para erros de validação
-            logger.warning(f"[ValidationError] {err.messages}")
-            raise ValidationError(err.messages)
+            logger.warning(f"[ValidationError] {err.message}")
+            raise 
         except Exception as e:
             logger.error(f"Erro inesperado ao atualizar empresa {company_id}: {e}")
             raise InternalServerError("Erro inesperado ao atualizar empresa.")
@@ -155,6 +165,8 @@ class CompanyService:
             CompanyRepository.delete(company_id)
             logger.info(f"Empresa {company_id} deletada com sucesso.")
             return {"message": "Empresa deletada com sucesso."}
+        except ValidationError as err:
+            logger.warning(f"Erro na validação do ID: {err.message}")
         except NotFoundError:
             raise
         except Exception as e:

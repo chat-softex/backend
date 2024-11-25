@@ -1,11 +1,12 @@
 # app/service/usuario_service.py:
 import logging
-from marshmallow import ValidationError
+import marshmallow
 from app.repositories.usuario_repository import UserRepository
 from app.validators.usuario_validator import UserSchema
 from app.utils.encryption import Encryption
 from app.utils.jwt_manager import JWTManager
-from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError
+from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError, ValidationError
+from app.erros.error_handler import ErrorHandler
 
 # Configuração do logger
 logger = logging.getLogger(__name__)
@@ -46,6 +47,9 @@ class UserService:
             
             logger.info(f"Usuário com ID {user_id} encontrado com sucesso.")
             return usuario
+        except ValidationError as err:
+            logger.warning(f"Erro na validação do ID: {err.message}")
+            raise
         except NotFoundError:
             raise
         except Exception as e:
@@ -66,14 +70,17 @@ class UserService:
                 logger.warning("Tentativa de criação com e-mail já cadastrado.")
                 raise ConflictError(resource="E-mail", message="E-mail já está cadastrado.")
 
-
-            usuario_data = self.schema.load(normalized_data)
+            try:
+                usuario_data = self.schema.load(normalized_data)
+            except marshmallow.exceptions.ValidationError as marshmallow_error:
+                ErrorHandler.handle_marshmallow_errors(marshmallow_error.messages)
+            
             usuario_data['senha'] = self.encryption.encrypt(usuario_data['senha'])
             usuario = UserRepository.create(usuario_data)
             logger.info(f"Usuário criado com sucesso: ID {usuario.id}")
             return usuario
         except ValidationError as err:
-            logger.warning(f"Erro na validação de entrada: {err.messages}")
+            logger.warning(f"Erro na validação de entrada: {err.message}")
             raise
         except ConflictError:
             raise
@@ -99,14 +106,18 @@ class UserService:
 
             # normaliza os dados
             normalized_data = self._normalize_data(data)
+            
 
             if 'email' in normalized_data and normalized_data['email'] != usuario.email:
                 if UserRepository.get_by_email(normalized_data['email']):
                     logger.warning(f"E-mail {normalized_data['email']} já em uso.")
                     raise ConflictError(resource="E-mail", message="E-mail já está cadastrado.")
 
-            
-            updated_data = self.schema.load(normalized_data, partial=True)
+
+            try:
+                updated_data = self.schema.load(normalized_data, partial=True)
+            except marshmallow.exceptions.ValidationError as marshmallow_error:
+                ErrorHandler.handle_marshmallow_errors(marshmallow_error.messages)
 
             if 'senha' in updated_data:
                 updated_data['senha'] = self.encryption.encrypt(updated_data['senha'])
@@ -128,8 +139,8 @@ class UserService:
             raise
         except ValidationError as err:
              # tratamento para erros de validação
-            logger.warning(f"[ValidationError] {err.messages}")
-            raise ValidationError(err.messages)
+            logger.warning(f"[ValidationError] {err.message}")
+            raise 
         except Exception as e:
             # tratamento de erros genéricos
             logger.error(f"Erro inesperado ao atualizar usuário {user_id}: {e}")
@@ -152,6 +163,9 @@ class UserService:
             UserRepository.delete(user_id)
             logger.info(f"Usuário {user_id} deletado com sucesso.")
             return {"message": "Usuário deletado com sucesso."}
+        except ValidationError as err:
+            logger.warning(f"Erro na validação do ID: {err.message}")
+            raise
         except NotFoundError:
             raise
         except Exception as e:

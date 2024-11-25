@@ -60,10 +60,4 @@ class InvalidTokenError(AppError):
         super().__init__(message)
 
 
-class SensitiveDataError(AppError):
-    """Erro para documentos contendo dados sensíveis."""
-    def __init__(self, sensitive_data, message="Documento contém dados sensíveis"):
-        self.sensitive_data = sensitive_data
-        self.message = f"{message}: {sensitive_data}"
-        super().__init__(self.message)
 
