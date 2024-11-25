@@ -76,7 +76,7 @@ class ReviewRepository:
     @staticmethod
     def delete(id):
         try:
-            avaliacao = ReviewRepository.get_by_id(id)  # Garante que a avaliação existe
+            avaliacao = ReviewRepository.get_by_id(id)  
             db.session.delete(avaliacao)
             db.session.commit()
             logger.info(f"Avaliação com ID {id} deletada com sucesso.")

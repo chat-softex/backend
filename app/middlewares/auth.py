@@ -3,7 +3,7 @@ import logging
 from flask import request, jsonify, g
 from functools import wraps
 from app.utils.jwt_manager import JWTManager
-from app.repositories.usuario_repository import UsuarioRepository
+from app.repositories.usuario_repository import UserRepository
 from app.erros.custom_errors import UnauthorizedError, InvalidTokenError
 from app.erros.error_handler import ErrorHandler
 
@@ -20,7 +20,7 @@ def jwt_required(f):
             return ErrorHandler.handle_unauthorized_error(UnauthorizedError("Token é obrigatório"))
 
         try:
-            # Verifica se o token tem o prefixo 'Bearer'
+            # verificar se o token tem o prefixo 'Bearer'
             parts = token.split()
             if len(parts) == 2 and parts[0].lower() == "bearer":
                 token = parts[1]
@@ -29,12 +29,12 @@ def jwt_required(f):
                 raise InvalidTokenError("Formato de token inválido. Use o formato 'Bearer <token>'.")
 
             token_data = JWTManager.decode_token(token)
-            request.user = UsuarioRepository.get_by_id(token_data['data']['id'])
+            request.user = UserRepository.get_by_id(token_data['data']['id'])
             if not request.user:
                 logger.warning("Usuário não encontrado para o token fornecido.")
                 raise UnauthorizedError("Usuário não encontrado.")
                 
-            # Adiciona o novo token ao header da resposta se próximo de expirar
+            # adiciona o novo token ao header da resposta se próximo de expirar
             if 'new_token' in token_data:
                 g.new_token = token_data['new_token']
                 

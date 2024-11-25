@@ -160,38 +160,583 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 
 ## Rotas - EndPoints :arrows_clockwise:
 
-1. **Usuarios:** :x:
-   - GET /users: Retorna todos os usuários.
-   - GET /users/{id}: Retorna um usuário específico por ID.
-   - POST /users: Cadastra um novo usuário.
-   - PUT /users/{id}: Atualiza os dados de um usuário por ID.
-   - DELETE /users/{id}: Deleta um usuário por ID.
-   - POST /users/login: Autentica um usuário e retorna o token JWT.
+**1. Autenticação e Tokens** 🔑
 
+**1.1. Login de usuário**
+  - **Rota:** ```POST /users/login```
+  - **Descrição:** Autentica um usuário e retorna um token JWT.
+  - **Permissão:** Aberta (Não requer autenticação)
+  - **Requisição:**
+    - **Headers:** ```Content-Type: application/json```
+    - **Body:**
+    
+    ```
+    JSON
+        {
+            "email": "joao@email.com",
+            "senha": "Senha123!"
+        }
+    ```    
 
-2. **Empresas:** :x:
-   - GET /companies: Retorna todas as empresas.
-   - GET /companies/{id}: Retorna uma empresa específica por ID.
-   - POST /companies: Cadastra uma nova empresa.
-   - PUT /companies/{id}: Atualiza os dados de uma empresa por ID.
-   - DELETE /companies/{id}: Deleta uma empresa por ID.
+  - **Resposta:**
+    - **Status:** ```200 OK```
+    - **Body:**
+  
+    ```
+    JSON
+        {
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "tipo": "avaliador"
+        }
+    ```    
 
+...
 
-3. **Projetos:** :x:
-   - GET /projects: Retorna todos os projetos.
-   - GET /projects/{id}: Retorna um projeto específico por ID.
-   - POST /projects: Cria um novo projeto (upload de um projeto).
-   - PUT /projects/{id}: Atualiza os dados de um projeto por ID.
-   - DELETE /projects/{id}: Deleta um projeto por ID.
-   - PATCH /projects/{id}/status: Atualiza o status de um projeto ('Em avaliação', 'Aprovado', 'Reprovado').
+**2. Usuários:** Gerenciamento de usuários cadastrados :bust_in_silhouette:
 
+**2.1. Listar todos os usuários**
+  - **Rota:** ```GET /users```
+  - **Descrição:** Retorna todos os usuários cadastrados.
+  - **Permissão:** Administradores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Resposta:**
+    - **Status:** ```200 OK```
+    - **Body:**
 
-4. **Avaliações:** :x:
-   - POST /reviews: Cria uma avaliação para um projeto específico.
-   - GET /reviews: Retorna todas as avaliações.
-   - GET /reviews/{id}: Retorna uma avaliação específica por ID.
-   - PUT /reviews/{id}: Atualiza uma avaliação por ID.
-   - DELETE /reviews/{id}: Deleta uma avaliação por ID.
+    ```
+    JSON
+        [
+            {
+                "id": "123e4567-e89b-12d3-a456-426614174000",
+                "nome": "joão silva",
+                "email": "joao@email.com",
+                "tipo": "avaliador",
+                "data_cadastro": "2024-11-24T10:00:00Z"
+            },
+            {
+                "id": "456e7890-a123-45d6-c789-426614174001",
+                "nome": "maria oliveira",
+                "email": "maria@email.com",
+                "tipo": "administrador",
+                "data_cadastro": "2024-11-23T09:30:00Z"
+            }
+        ]
+    ```
+
+...
+
+**2.2. Obter um usuário por ID**
+  - **Rota:** ```GET /users/{id}```
+  - **Descrição:** Retorna informações de um usuário específico.
+  - **Permissão:** Administradores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Resposta:**
+    - **Status:** ```200 OK```
+    - **Body:**
+  
+    ```
+    JSON
+        {
+            "id": "123e4567-e89b-12d3-a456-426614174000",
+            "nome": "joão silva",
+            "email": "joao@email.com",
+            "tipo": "avaliador",
+            "data_cadastro": "2024-11-24T10:00:00Z"
+        }
+    ```
+
+...
+
+**2.3. Criar um novo usuário**
+  - **Rota:** ```POST /users```
+  - **Descrição:** Cadastra um novo usuário.
+  - **Permissão:** Aberta (Não requer autenticação).
+  - **Requisição:**
+    - **Headers:** ```Content-Type: application/json```
+    - **Body:**
+      
+        ```
+        JSON
+            {
+                "nome": "João Silva",
+                "email": "joao@email.com",
+                "senha": "Senha123!",
+                "tipo": "avaliador"
+            }
+        ```
+
+  - **Resposta:**
+    - **Status:** ```201 Created```
+    - **Body:**
+
+        ```
+        JSON
+            {
+                "id": "123e4567-e89b-12d3-a456-426614174000",
+                "nome": "joão silva",
+                "email": "joao@email.com",
+                "tipo": "avaliador",
+                "data_cadastro": "2024-11-24T10:00:00Z"
+            }
+        ```      
+
+...
+
+**2.4. Atualizar um usuário**
+  - **Rota:** ```PUT /users/{id}```
+  - **Descrição:** Atualiza os dados de um usuário pelo ID.
+  - **Permissão:** Administradores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Requisição:**
+    - **Headers:** ```Content-Type: application/json```
+    - **Body:**
+  
+        ```
+        JSON
+            {
+                "nome": "João Oliveira",
+                "email": "joao.oliveira@email.com",
+                "tipo": "administrador"
+            }
+        ```
+
+  - **Resposta:**
+    - **Status:** ```200 OK```
+    - **Body:**
+
+        ```
+        JSON
+            {
+                "id": "123e4567-e89b-12d3-a456-426614174000",
+                "nome": "joão oliveira",
+                "email": "joao.oliveira@email.com",
+                "tipo": "administrador",
+                "data_cadastro": "2024-11-24T10:00:00Z"
+            }
+        ```
+
+...
+
+**2.5. Deletar um usuário**
+  - **Rota:** ```DELETE /users/{id}```
+  - **Descrição:** Remove um usuário pelo ID.
+  - **Permissão:** Administradores autenticados.
+  - **Descrição:** Remove um usuário pelo ID.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Resposta:**
+    - **Status:** ```204 No Content```
+
+...
+
+**3. Empresas:** Gerenciamento de empresas cadastradas :office:
+
+**3.1. Listar todas as empresas**
+  - **Rota:** ```GET /companies```
+  - **Descrição:** Retorna todas as empresas cadastradas.
+  - **Permissão:** Avaliadores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Resposta:**
+    - **Status:** ```200 OK```
+    - **Body:**
+  
+    ```
+    JSON
+
+        [
+            {
+                "id": "123e4567-e89b-12d3-a456-426614174000",
+                "nome_fantasia": "Empresa X",
+                "cnpj": "12345678000100",
+                "email": "contato@empresa.com",
+                "data_cadastro": "2024-11-24T10:00:00Z"
+            },
+            {
+                "id": "456e7890-a123-45d6-c789-426614174001",
+                "nome_fantasia": "Empresa Y",
+                "cnpj": "98765432000199",
+                "email": "contato@empresay.com",
+                "data_cadastro": "2024-11-23T09:30:00Z"
+            }
+        ]
+    ```  
+
+...
+
+**3.2. Obter uma empresa por ID**
+  - **Rota:** ```GET /companies/{id}```
+  - **Descrição:** Retorna informações de uma empresa específica.
+  - **Permissão:** Avaliadores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Resposta:**
+    - **Status:** ```200 OK```
+    - **Body:**
+
+    ```
+    JSON
+    {
+        "id": "123e4567-e89b-12d3-a456-426614174000",
+        "nome_fantasia": "Empresa X",
+        "cnpj": "12345678000100",
+        "email": "contato@empresa.com",
+        "data_cadastro": "2024-11-24T10:00:00Z"
+    }
+    ```
+
+...
+
+**3.2. Criar uma nova empresa**
+  - **Rota:** ```POST /companies```
+  - **Descrição:** Cadastra uma nova empresa.
+  - **Permissão:** Avaliadores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Requisição:**
+    - **Headers:** ```Content-Type: application/json```
+    - **Body:**
+
+    ```
+    JSON
+        {
+            "nome_fantasia": "Empresa X",
+            "cnpj": "12345678000100",
+            "email": "contato@empresa.com"
+        }
+    ```    
+
+  - **Resposta:**
+    - **Status:** ```201 Created```
+    - **Body:**
+
+    ```
+    JSON
+        {
+            "id": "123e4567-e89b-12d3-a456-426614174000",
+            "nome_fantasia": "Empresa X",
+            "cnpj": "12345678000100",
+            "email": "contato@empresa.com",
+            "data_cadastro": "2024-11-24T10:00:00Z"
+        }
+    ```  
+
+...
+
+**3.3. Atualizar uma empresa**
+  - **Rota:** ```PUT /companies/{id}```
+  - **Descrição:** Atualiza os dados de uma empresa pelo ID.
+  - **Permissão:** Avaliadores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Requisição:**
+    - **Headers:** ```Content-Type: application/json```
+    - **Body:**
+
+    ```
+    JSON
+
+        {
+            "nome_fantasia": "Empresa Atualizada",
+            "cnpj": "12345678000100",
+            "email": "contato@empresaatualizada.com"
+        }
+    ```
+
+  - **Resposta:**
+    - **Status:** ```200 OK```
+    - **Body:**
+
+    ```
+    JSON
+        {
+            "id": "123e4567-e89b-12d3-a456-426614174000",
+            "nome_fantasia": "Empresa Atualizada",
+            "cnpj": "12345678000100",
+            "email": "contato@empresaatualizada.com",
+            "data_cadastro": "2024-11-24T10:00:00Z"
+        }
+     ```    
+
+...
+
+**3.4. Deletar uma empresa**
+  - **Rota:** DELETE /companies/{id}
+  - **Descrição:** Remove uma empresa pelo ID.
+  - **Permissão:** Avaliadores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Resposta:**
+    - **Status:** ```204 No Content```
+
+...
+
+**4. Projetos:** Gerenciamento de projetos submetidos :page_facing_up:
+
+**4.1. Listar todos os projetos**
+  - **Rota:** ```GET /projects```
+  - **Descrição:** Retorna todos os projetos cadastrados.
+  - **Permissão:** Avaliadores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Resposta:**
+    - **Status:** ```200 OK```
+    - **Body:**
+
+    ```
+    JSON
+        [
+            {
+                "id": "789e1234-f89b-12d3-a456-426614174000",
+                "titulo_projeto": "projeto softex",
+                "status": "em avaliação",
+                "arquivo": "https://firebase.com/projeto1.pdf",
+                "data_submissao": "2024-11-24T11:00:00Z"
+            } 
+        ]
+    ```    
+
+...
+
+**4.2. Criar um projeto**
+  - **Rota:** ```POST /projects```
+  - **Descrição:** Cria um novo projeto.
+  - **Permissão:** Avaliadores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Requisição:**
+    - **Headers:** ```Content-Type: multipart/form-data```
+    - **Body:**
+
+    ```
+    JSON
+        {
+            "titulo_projeto": "Projeto Softex",
+            "status": "em avaliação",
+            "arquivo": "<arquivo_pdf>"
+        }
+
+    ```        
+
+  - **Resposta:**
+    - **Status:** ```201 Created```
+    - **Body:**
+
+    ```
+    JSON
+        {
+            "id": "789e1234-f89b-12d3-a456-426614174000",
+            "titulo_projeto": "projeto softex",
+            "status": "em avaliação",
+            "arquivo": "https://firebase.com/projeto1.pdf",
+            "data_submissao": "2024-11-24T11:00:00Z"
+        }
+    ```    
+
+...
+
+**4.4. Atualizar um projeto**
+  - **Rota:** ```PUT /projects/{id}```
+  - **Descrição:** Atualiza os dados de um projeto pelo ID.
+  - **Permissão:** Avaliadores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Requisição:**
+    - **Headers:** ```Content-Type: application/json```
+    - **Body:**
+
+    ```
+    JSON
+        {
+            "titulo_projeto": "Projeto Softex Atualizado",
+            "status": "aprovado"
+        }
+    ```    
+
+  - **Resposta:**
+    - **Status:** ```200 OK```
+    - **Body:**
+
+    ```
+    JSON
+        {
+            "id": "789e1234-f89b-12d3-a456-426614174000",
+            "titulo_projeto": "projeto softex atualizado",
+            "status": "aprovado",
+            "arquivo": "https://firebase.com/projeto1.pdf",
+            "data_submissao": "2024-11-24T11:00:00Z"
+        }
+    ```    
+
+...
+
+**4.5. Atualizar o status de um projeto**
+  - **Rota:** ```PATCH /projects/{id}/status```
+  - **Descrição:** Atualiza o status de um projeto.
+  - **Permissão:** Avaliadores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Requisição:**
+    - **Headers:** ```Content-Type: application/json```
+    - **Body:**
+
+    ```
+    JSON
+        {
+            "status": "aprovado"
+        }
+    ```    
+
+  - **Resposta:**
+  - **Status:** ```200 OK```
+    - **Body:**
+
+    ```
+    JSON
+        {
+            "id": "789e1234-f89b-12d3-a456-426614174000",
+            "titulo_projeto": "projeto softex",
+            "status": "aprovado",
+            "arquivo": "https://firebase.com/projeto1.pdf",
+            "data_submissao": "2024-11-24T11:00:00Z"
+        }
+    ```    
+
+...
+
+**4.6. Deletar um projeto**
+  - **Rota:** ```DELETE /projects/{id}```
+  - **Descrição:** Remove um projeto pelo ID.
+  - **Permissão:** Avaliadores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Resposta:**
+    - **Status:** ```204 No Content```
+
+...
+
+**5. Avaliações:** Gerenciamento de avaliações dos projetos :star:
+
+**5.1. Listar todas as avaliações**
+  - **Rota:** ```GET /reviews```
+  - **Descrição:** Retorna todas as avaliações cadastradas.
+  - **Permissão:** Avaliadores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Resposta:**
+    - **Status:** ```200 OK```
+    - **Body:**
+
+    ```
+    JSON
+        [
+            {
+                "id": "123e4567-f89b-12d3-a456-426614174000",
+                "projeto_id": "789e1234-f89b-12d3-a456-426614174000",
+                "feedback_qualitativo": "Ótimo trabalho!",
+                "data_avaliacao": "2024-11-24T11:00:00Z"
+            }
+        ]
+    ```    
+
+...
+
+**5.2. Obter uma avaliação por ID**
+  - **Rota:** ```GET /reviews/{id}```
+  - **Descrição:** Retorna informações de uma avaliação específica.
+  - **Permissão:** Avaliadores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Resposta:**
+    - **Status:** ```200 OK```
+    - **Body:**
+
+    ```
+    JSON
+        {
+            "id": "123e4567-f89b-12d3-a456-426614174000",
+            "projeto_id": "789e1234-f89b-12d3-a456-426614174000",
+            "feedback_qualitativo": "Ótimo trabalho!",
+            "data_avaliacao": "2024-11-24T11:00:00Z"
+        }
+    ```    
+
+...
+
+**5.3. Criar uma nova avaliação**
+  - **Rota:** ```POST /reviews```
+  - **Descrição:** Cria uma nova avaliação.
+  - **Permissão:** Avaliadores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Requisição:**
+    - **Headers:** ```Content-Type: application/json```
+    - **Body:**
+
+    ```
+    JSON
+        {
+            "projeto_id": "789e1234-f89b-12d3-a456-426614174000",
+            "feedback_qualitativo": "Ótimo trabalho!"
+        }
+    ```
+
+  - **Resposta:**
+    - **Status:** ```201 Created```
+    - **Body:**
+
+    ```
+    JSON
+        {
+            "id": "123e4567-f89b-12d3-a456-426614174000",
+            "projeto_id": "789e1234-f89b-12d3-a456-426614174000",
+            "feedback_qualitativo": "Ótimo trabalho!",
+            "data_avaliacao": "2024-11-24T11:00:00Z"
+        }
+    ```
+
+...
+
+**5.4. Atualizar uma avaliação**
+  - **Rota:** ```PUT /reviews/{id}```
+  - **Descrição:** Atualiza os dados de uma avaliação pelo ID.
+  - **Permissão:** Avaliadores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Requisição:**
+    - **Headers:** ```Content-Type: application/json```
+    - **Body:**
+
+    ```
+    JSON
+        {
+            "feedback_qualitativo": "Trabalho excelente!"
+        }
+    ```    
+
+  - **Resposta:**
+    - **Status:** ```200 OK```
+    - **Body:**
+
+    ```
+    JSON
+        {
+            "id": "123e4567-f89b-12d3-a456-426614174000",
+            "projeto_id": "789e1234-f89b-12d3-a456-426614174000",
+            "feedback_qualitativo": "Trabalho excelente!",
+            "data_avaliacao": "2024-11-24T11:00:00Z"
+        }
+    ```    
+
+...
+
+**5.5. Deletar uma avaliação**
+  - **Rota:** ```DELETE /reviews/{id}```
+  - **Descrição:** Remove uma avaliação pelo ID.
+  - **Permissão:** Avaliadores autenticados.
+  - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
+  - **Resposta:**
+    - **Status:** ```204 No Content```
+
+...
+
+**Observações:**
+  - **Cabeçalho de Autenticação:** Para rotas protegidas, inclua:
+
+    ``` 
+    Authorization: Bearer <token>
+    ``` 
+
+  - **Permissões:**
+    - **Aberta:** Não requer autenticação.
+    - **Avaliadores autenticados:** Requer um token JWT válido com permissões para avaliadores, usuários do tipo avaliador.
+    - **Administradores autenticados:** Requer um token JWT válido com permissões administrativas, usuários do tipo administrador.
+
 
 ---
 
