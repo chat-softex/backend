@@ -44,12 +44,27 @@ class CompanyRepository:
             empresa = Company.query.filter_by(cnpj=cnpj).first()
             if not empresa:
                 logger.warning(f"Empresa com CNPJ '{cnpj}' não encontrada.")
-                raise NotFoundError(resource="Empresa", message="Empresa com esse CNPJ não encontrada.")
+                return None  # retorna None ao invés de levantar NotFoundError
             logger.info(f"Empresa com CNPJ '{cnpj}' encontrada com sucesso.")
             return empresa
         except SQLAlchemyError as e:
             logger.error(f"Erro ao buscar empresa com CNPJ '{cnpj}': {e}")
             raise InternalServerError(message="Erro ao buscar empresa pelo CNPJ.")
+        
+
+    @staticmethod
+    def get_by_email(email):
+        try:
+            empresa = Company.query.filter_by(email=email).first()
+            if not empresa:
+                logger.info(f"Empresa com email {email} não encontrado.")
+                return None  # retorna None ao invés de levantar NotFoundError
+            logger.info(f"Empresa com email {email} encontrado com sucesso.")
+            return empresa
+        except SQLAlchemyError as e:
+            logger.error(f"Erro ao buscar empresa com email {email}: {e}")
+            raise InternalServerError(message="Erro ao buscar empresa pelo email.")    
+        
     
 
     # Adiciona uma nova empresa ao banco de dados.
