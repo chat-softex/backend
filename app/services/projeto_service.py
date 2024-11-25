@@ -1,10 +1,11 @@
 # app/service/projeto_service.py:
 import logging
-from marshmallow import ValidationError
+import marshmallow
 from app.repositories.projeto_repository import ProjectRepository
 from app.utils.file_utils import FileUtils
 from app.validators.projeto_validator import ProjectSchema
-from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError
+from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError, ValidationError
+from app.erros.error_handler import ErrorHandler
 
 # Configuração do logger
 logger = logging.getLogger(__name__)
@@ -50,6 +51,9 @@ class ProjectService:
                 raise NotFoundError(resource="Projeto", message="Projeto não encontrado.")       
             logger.info(f"Projeto {project_id} encontrado com sucesso.")
             return projeto
+        except ValidationError as err:
+            logger.warning(f"Erro na validação do ID: {err.message}")
+            raise
         except NotFoundError:
             raise
         except Exception as e:
@@ -70,24 +74,24 @@ class ProjectService:
                 logger.warning("Documento contém dados sensíveis.")
                 raise ValidationError(field="arquivo", message="Documento contém dados sensíveis.")
 
-            # try:
-            #     self.file_utils.is_valid_document(file, file.filename)
-            # except ValidationError as ve:
-            #     logger.warning(f"Erro na validação do arquivo: {ve.message}")
-            #     raise ve
 
             file_url = self.file_utils.upload_to_firebase(file, file.filename)
             data['arquivo'] = file_url
 
             normalized_data = self._normalize_data(data)
-            projeto_data = self.schema.load(normalized_data)
+
+
+            try:
+                projeto_data = self.schema.load(normalized_data)
+            except marshmallow.exceptions.ValidationError as marshmallow_error:
+                ErrorHandler.handle_marshmallow_errors(marshmallow_error.messages)
 
             projeto = ProjectRepository.create(projeto_data)
             logger.info(f"Projeto criado com sucesso: ID {projeto.id}")
             return projeto
 
         except ValidationError as err:
-            logger.warning(f"Erro na validação de entrada: {err.messages}")
+            logger.warning(f"Erro na validação de entrada: {err.message}")
             raise 
         except ConflictError as e:
             logger.warning(f"Conflito ao criar projeto: {e.message}")
@@ -107,11 +111,6 @@ class ProjectService:
                 if not self._is_allowed_file(file.filename):
                     raise ValidationError(field="arquivo", message="Somente arquivos PDF, DOC e DOCX são permitidos.")
 
-                # try:
-                #     self.file_utils.is_valid_document(file, file.filename)
-                # except ValidationError as ve:
-                #     logger.warning(f"Erro de validação do arquivo: {ve.message}")
-                #     raise ve
                 
                 # Valida o conteúdo do arquivo com if explícito
                 if not self.file_utils.is_valid_document(file, file.filename):
@@ -122,11 +121,19 @@ class ProjectService:
                 data = data or {}
                 data['arquivo'] = file_url
 
+                
+            # Tratamento de dados fornecidos
             if data:
                 normalized_data = self._normalize_data(data)
-                projeto_data = self.schema.load(normalized_data, partial=True)
+                try:
+                    projeto_data = self.schema.load(normalized_data, partial=True)
+                except marshmallow.exceptions.ValidationError as marshmallow_error:
+                    ErrorHandler.handle_marshmallow_errors(marshmallow_error.messages)
+
+                # Atualização dos atributos do projeto
                 for key, value in projeto_data.items():
-                    setattr(projeto, key, value)
+                    setattr(projeto, key, value)    
+
 
             updated_projeto = ProjectRepository.update(projeto)
             logger.info(f"Projeto {project_id} atualizado com sucesso.")
@@ -136,7 +143,7 @@ class ProjectService:
             logger.warning(f"Projeto não encontrado para atualização: {e}")
             raise
         except ValidationError as err:
-            logger.warning(f"Erro na validação de entrada: {err.messages}")
+            logger.warning(f"Erro na validação de entrada: {err.message}")
             raise
         except Exception as e:
             logger.error(f"Erro inesperado ao atualizar projeto {project_id}: {e}")
@@ -144,6 +151,8 @@ class ProjectService:
 
     def update_status(self, project_id, novo_status):
         try:
+            novo_status = novo_status.lower()
+
             if novo_status not in ['em avaliação', 'aprovado', 'reprovado']:
                 raise ValidationError(field="status", message="Status inválido.")
 
@@ -180,6 +189,9 @@ class ProjectService:
             ProjectRepository.delete(project_id)
             logger.info(f"Projeto {project_id} deletado com sucesso.")
             return {"message": "Projeto deletado com sucesso."}
+        except ValidationError as err:
+            logger.warning(f"Erro na validação do ID: {err.message}")
+            raise
         except NotFoundError:
             raise
         except Exception as e:

@@ -1,3 +1,4 @@
+# app/utils/text_extractor.py:
 import PyPDF2
 import pdfplumber
 from io import BytesIO

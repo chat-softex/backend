@@ -29,6 +29,8 @@ class CompanyController:
             empresa = CompanyService().get_by_id(str(id))
             logger.info(f"Empresa {id} encontrado.")
             return jsonify(empresa.to_dict()), 200
+        except ValidationError as e:
+            return ErrorHandler.handle_validation_error(e)
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
         except Exception as e:
@@ -89,6 +91,8 @@ class CompanyController:
             CompanyService().delete(str(id))
             logger.info(f"Empresa {id} deletado com sucesso.")
             return '', 204 
+        except ValidationError as e:
+            return ErrorHandler.handle_validation_error(e)
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
         except Exception as e:
