@@ -49,11 +49,11 @@ class UserSchema(Schema):
         }
     )
 
-    @validates_schema
-    def validate_dependencies(self, data, **kwargs):
-        """Validações adicionais, caso sejam necessárias."""
-        if data.get("email") and data.get("email").endswith("@exemplo.com"):
-            raise ValidationError(
-                field="email",
-                message="Endereços de email '@exemplo.com' não são permitidos."
-            )
+    # @validates_schema
+    # def validate_dependencies(self, data, **kwargs):
+    #     """Validações adicionais, caso sejam necessárias."""
+    #     if data.get("email") and data.get("email").endswith("@exemplo.com"):
+    #         raise ValidationError(
+    #             field="email",
+    #             message="Endereços de email '@exemplo.com' não são permitidos."
+    #         )

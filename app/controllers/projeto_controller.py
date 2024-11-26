@@ -3,7 +3,7 @@ import logging
 from flask import request, jsonify
 from app.services.projeto_service import ProjectService
 from app.erros.error_handler import ErrorHandler
-from app.erros.custom_errors import NotFoundError, ValidationError, ConflictError, InternalServerError
+from app.erros.custom_errors import NotFoundError, ValidationError, ConflictError, InternalServerError, ExternalAPIError
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +53,8 @@ class ProjectController:
             return jsonify(projeto.to_dict()), 201
         except ValidationError as e:
             return ErrorHandler.handle_validation_error(e)
+        except ExternalAPIError as e:
+            return ErrorHandler.handle_external_api_error(e)
         except ConflictError as e:
             return ErrorHandler.handle_conflict_error(e)
         except Exception as e:
@@ -76,6 +78,8 @@ class ProjectController:
             return jsonify(projeto.to_dict()), 200
         except ValidationError as e:
             return ErrorHandler.handle_validation_error(e)
+        except ExternalAPIError as e:
+            return ErrorHandler.handle_external_api_error(e)
         except NotFoundError as e:
             return ErrorHandler.handle_not_found_error(e)
         except ConflictError as e:

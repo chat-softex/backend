@@ -37,9 +37,9 @@ class ProjectSchema(Schema):
         error_messages={"required": "O ID da empresa é obrigatório."}
     )
 
-    @validates_schema
-    def validate_dependencies(self, data, **kwargs):
-        """Valida relações entre campos (ex.: IDs de avaliador e empresa)."""
-        if data.get("avaliador_id") == data.get("empresa_id"):
-            raise ValidationError(field="avaliador_id/empresa_id", message="Avaliador e empresa não podem ser os mesmos.")
+    # @validates_schema
+    # def validate_dependencies(self, data, **kwargs):
+    #     """Valida relações entre campos (ex.: IDs de avaliador e empresa)."""
+    #     if data.get("avaliador_id") == data.get("empresa_id"):
+    #         raise ValidationError(field="avaliador_id/empresa_id", message="Avaliador e empresa não podem ser os mesmos.")
 

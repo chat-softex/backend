@@ -3,7 +3,7 @@ import logging
 from flask import request, jsonify
 from app.services.avaliacao_service import ReviewService
 from app.erros.error_handler import ErrorHandler
-from app.erros.custom_errors import NotFoundError, ValidationError, ConflictError
+from app.erros.custom_errors import NotFoundError, ValidationError, ConflictError, ExternalAPIError
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +50,8 @@ class ReviewController:
             return ErrorHandler.handle_not_found_error(e)
         except ValidationError as e:
             return ErrorHandler.handle_validation_error(e)
+        except ExternalAPIError as e:
+            return ErrorHandler.handle_external_api_error(e)
         except ConflictError as e:
             return ErrorHandler.handle_conflict_error(e)
         except Exception as e:

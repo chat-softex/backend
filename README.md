@@ -75,7 +75,8 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 │   ├── utils/                          # Funções utilitárias (criptografia, JWT, etc.)
 │   │   ├── encryption.py               # Funções para criptografia de arquivos
 │   │   ├── jwt_manager.py              # Gerencia a criação e decodificação de tokens JWT, usados para autenticação de usuários
-│   │   └── file_utils.py               # Utilitário para manipulação de arquivos PDF e upload para o Firebase
+│   │   ├── file_utils.py               # Utilitário para manipulação de arquivos PDF e upload para o Firebase
+|   |   └── text_extractor.py           # Extração de texto de arquivos PDF, DOC e DOCS
 |   |
 │   ├── controllers/                    # Controladores que recebem e processam as requisições HTTP
 |   |   ├── empresa_controller.py       # Requisições HTTP e invocando os serviços para empresas

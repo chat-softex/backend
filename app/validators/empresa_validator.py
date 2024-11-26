@@ -43,11 +43,11 @@ class CompanySchema(Schema):
                 message="CNPJ inválido. Certifique-se de que o CNPJ está no formato XX.XXX.XXX/XXXX-XX e é válido."
             )
 
-    @validates_schema
-    def validate_dependencies(self, data, **kwargs):
-        """Validações adicionais, caso sejam necessárias."""
-        if "email" in data and data["email"].endswith("@exemplo.com"):
-            raise ValidationError(
-                field="email",
-                message="Emails com domínio '@exemplo.com' não são permitidos."
-            )
+    # @validates_schema
+    # def validate_dependencies(self, data, **kwargs):
+    #     """Validações adicionais, caso sejam necessárias."""
+    #     if "email" in data and data["email"].endswith("@exemplo.com"):
+    #         raise ValidationError(
+    #             field="email",
+    #             message="Emails com domínio '@exemplo.com' não são permitidos."
+    #         )
