@@ -4,7 +4,7 @@ import marshmallow
 from app.repositories.projeto_repository import ProjectRepository
 from app.utils.file_utils import FileUtils
 from app.validators.projeto_validator import ProjectSchema
-from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError, ValidationError
+from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError, ValidationError, ExternalAPIError
 from app.erros.error_handler import ErrorHandler
 
 # Configuração do logger
@@ -75,7 +75,12 @@ class ProjectService:
                 raise ValidationError(field="arquivo", message="Documento contém dados sensíveis.")
 
 
-            file_url = self.file_utils.upload_to_firebase(file, file.filename)
+            try:
+                file_url = self.file_utils.upload_to_firebase(file, file.filename)
+            except ExternalAPIError as api_error:
+                logger.error(f"Erro ao utilizar Firebase: {api_error.message}")
+                raise
+
             data['arquivo'] = file_url
 
             normalized_data = self._normalize_data(data)
@@ -95,6 +100,9 @@ class ProjectService:
             raise 
         except ConflictError as e:
             logger.warning(f"Conflito ao criar projeto: {e.message}")
+            raise
+        except ExternalAPIError as err:
+            logger.error(f"Erro na integração com Firebase: {err.message}")
             raise
         except Exception as e:
             logger.error(f"Erro inesperado ao criar projeto: {e}")
@@ -117,7 +125,13 @@ class ProjectService:
                     logger.warning("Documento contém dados sensíveis.")
                     raise ValidationError(field="arquivo", message="Documento contém dados sensíveis.")
 
-                file_url = self.file_utils.upload_to_firebase(file, file.filename)
+                try:
+                    file_url = self.file_utils.upload_to_firebase(file, file.filename)
+                except ExternalAPIError as api_error:
+                    logger.error(f"Erro ao utilizar Firebase: {api_error.message}")
+                    raise
+
+                # file_url = self.file_utils.upload_to_firebase(file, file.filename)
                 data = data or {}
                 data['arquivo'] = file_url
 
@@ -144,6 +158,9 @@ class ProjectService:
             raise
         except ValidationError as err:
             logger.warning(f"Erro na validação de entrada: {err.message}")
+            raise
+        except ExternalAPIError as err:
+            logger.error(f"Erro na integração com Firebase: {err.message}")
             raise
         except Exception as e:
             logger.error(f"Erro inesperado ao atualizar projeto {project_id}: {e}")

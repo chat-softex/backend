@@ -5,7 +5,7 @@ from app.repositories.avaliacao_repository import ReviewRepository
 from app.repositories.projeto_repository import ProjectRepository
 from app.services.projeto_service import ProjectService
 from app.validators.avaliacao_validator import ReviewSchema
-from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError, ValidationError
+from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError, ValidationError, ExternalAPIError
 from app.erros.error_handler import ErrorHandler
 
 import uuid
@@ -74,7 +74,13 @@ class ReviewService:
 
             # realiza análise usando IaService
             projeto_texto = self.ia_service.obter_texto_projeto(projeto.id)
-            feedback_qualitativo = self.ia_service.enviar_para_analise(projeto_texto)
+            # feedback_qualitativo = self.ia_service.enviar_para_analise(projeto_texto)
+            try:
+                feedback_qualitativo = self.ia_service.enviar_para_analise(projeto_texto)
+            except ExternalAPIError as api_error:
+                logger.error(f"Erro ao utilizar a API da OpenAI: {api_error.message}")
+                raise
+
 
             # adiciona o feedback ao dicionário de dados
             data['feedback_qualitativo'] = feedback_qualitativo
@@ -98,6 +104,9 @@ class ReviewService:
             raise
         except ConflictError as err:
             logger.warning(f"Conflito detectado: {err}")
+            raise
+        except ExternalAPIError as err:
+            logger.error(f"Erro na integração com API externa: {err.message}")
             raise
         except Exception as e:
             logger.error(f"Erro inesperado ao criar avaliação: {e}")
