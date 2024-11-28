@@ -27,7 +27,7 @@
 
 :small_blue_diamond: [Arquitetura do Backend](#arquitetura-do-backend-triangular_ruler-straight_ruler) :heavy_check_mark:
 
-:small_blue_diamond: [Rotas - EndPoints](#rotas---endpoints-arrows_clockwise) :x:
+:small_blue_diamond: [Rotas - EndPoints](#rotas---endpoints-arrows_clockwise)  :heavy_check_mark:
 
 :small_blue_diamond: [Criar e ativar ambiente virtual](#criar-e-ativar-ambiente-virtual-white_check_mark)
 
@@ -39,7 +39,6 @@
 
 ---
 
-Criar e ativar ambiente virtual :white_check_mark:
 
 ## Arquitetura do Backend :triangular_ruler: :straight_ruler:
 
@@ -124,7 +123,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 └── README.md                           # Documentação
 ```
 
-**Descrição:** :x:
+**Descrição:**  :heavy_check_mark:
 
 1. **models/:** Define as tabelas e entidades do banco de dados usando SQLAlchemy.
 
