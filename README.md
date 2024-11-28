@@ -39,7 +39,6 @@
 
 ---
 
-Criar e ativar ambiente virtual :white_check_mark:
 
 ## Arquitetura do Backend :triangular_ruler: :straight_ruler:
 
