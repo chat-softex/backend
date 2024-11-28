@@ -744,17 +744,16 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 
 ### Criar e ativar ambiente virtual :white_check_mark:
 
-**Criar ambiente virtual:**
 ```bash
 $ python -m venv venv
 ```
 
-**Ativar ambiente virtual - MacOS/Linux:**
+**MacOS/Linux:**
 ```bash
 $ source venv/bin/activate
 ```
 
-**Ativar ambiente virtual - Windows:**
+**Windows:**
 ```bash
 $ venv\Scripts\activate 
 ```
@@ -772,19 +771,11 @@ $ pip install -r requirements.txt
 
 ### Iniciação e migration Database :file_folder:
 
-**Inicializar o ambiente de Migration:**
 ```bash
 $ flask db init
-```
-
-**Criar Migration:**
-```bash
 $ flask db migrate -m "Initial migration"
-```
-
-**Aplicar Migration ao banco de dados:**
-```bash
 $ flask db upgrade
+
 ```
 
 ---
