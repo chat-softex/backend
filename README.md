@@ -650,9 +650,9 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 
 ...
 
-**5.3. Criar uma nova avaliação**
+**5.3. Criar uma nova avaliação utilizando IA**
   - **Rota:** ```POST /reviews```
-  - **Descrição:** Cria uma nova avaliação.
+  - **Descrição:** Cria uma nova avaliação automaticamente utilizando inteligência artificial (API do ChatGPT) e critérios padronizados com base na Lei do Bem.
   - **Permissão:** Avaliadores autenticados.
   - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
   - **Requisição:**
@@ -662,8 +662,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
     ```
     JSON
         {
-            "projeto_id": "789e1234-f89b-12d3-a456-426614174000",
-            "feedback_qualitativo": "Ótimo trabalho!"
+            "projeto_id": "789e1234-f89b-12d3-a456-426614174000"
         }
     ```
 
@@ -676,16 +675,22 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
         {
             "id": "123e4567-f89b-12d3-a456-426614174000",
             "projeto_id": "789e1234-f89b-12d3-a456-426614174000",
-            "feedback_qualitativo": "Ótimo trabalho!",
+            "feedback_qualitativo": "O projeto apresenta um alto grau de inovação e alinhamento com os critérios da Lei do Bem.",
             "data_avaliacao": "2024-11-24T11:00:00Z"
         }
     ```
 
+    <br>
+
+    > [!Note]\
+    > A rota POST /reviews utiliza a API ChatGPT para análise automática, aplicando critérios pré-definidos com base na Lei do Bem, fornecendo um feedback inicial de alta qualidade e eficiência.
+    <br>
+
 ...
 
-**5.4. Atualizar uma avaliação**
+**5.4. Atualizar uma avaliação manualmente**
   - **Rota:** ```PUT /reviews/{id}```
-  - **Descrição:** Atualiza os dados de uma avaliação pelo ID.
+  - **Descrição:** Permite ao avaliador atualizar manualmente uma avaliação previamente realizada. Atualiza os dados de uma avaliação pelo ID.
   - **Permissão:** Avaliadores autenticados.
   - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
   - **Requisição:**
@@ -695,7 +700,8 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
     ```
     JSON
         {
-            "feedback_qualitativo": "Trabalho excelente!"
+            "feedback_qualitativo": "O projeto apresenta um alto grau de inovação e alinhamento com os critérios da Lei do Bem. 
+            Apresenta um alto grau de inovação e alinhamento com os critérios da Lei do Bem."
         }
     ```    
 
@@ -712,6 +718,12 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
             "data_avaliacao": "2024-11-24T11:00:00Z"
         }
     ```    
+
+    <br>
+
+    > [!Note]\
+    > A rota PUT /reviews/{id} é destinada a ajustes manuais feitos pelo avaliador, garantindo flexibilidade para refinamentos adicionais e observações específicas.
+    <br>
 
 ...
 
@@ -754,7 +766,7 @@ $ python -m venv venv
 $ source venv/bin/activate
 ```
 
-**Ativar ambiente virtual -Windows:**
+**Ativar ambiente virtual - Windows:**
 ```bash
 $ venv\Scripts\activate 
 ```
