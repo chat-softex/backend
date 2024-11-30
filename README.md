@@ -680,11 +680,9 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
         }
     ```
 
-    <br>
-
-    > [!Note]\
-    > A rota POST /reviews utiliza a API ChatGPT para análise automática, aplicando critérios pré-definidos com base na Lei do Bem, fornecendo um feedback inicial de alta qualidade e eficiência.
-    <br>
+> [!Note]\
+> A rota `POST /reviews` utiliza a API ChatGPT para análise automática, aplicando critérios pré-definidos com base na Lei do Bem, fornecendo um feedback inicial de alta qualidade e eficiência.
+<br>
 
 ...
 
@@ -714,17 +712,16 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
         {
             "id": "123e4567-f89b-12d3-a456-426614174000",
             "projeto_id": "789e1234-f89b-12d3-a456-426614174000",
-            "feedback_qualitativo": "Trabalho excelente!",
+            "feedback_qualitativo": "O projeto apresenta um alto grau de inovação e alinhamento com os critérios da Lei do Bem. 
+            Apresenta um alto grau de inovação e alinhamento com os critérios da Lei do Bem.",
             "data_avaliacao": "2024-11-24T11:00:00Z"
         }
     ```    
-
-    <br>
-
-    > [!Note]\
-    > A rota PUT /reviews/{id} é destinada a ajustes manuais feitos pelo avaliador, garantindo flexibilidade para refinamentos adicionais e observações específicas.
-    <br>
-
+    
+> [!Note]\
+> A rota `PUT /reviews/{id}` é destinada a ajustes manuais feitos pelo avaliador, garantindo flexibilidade para refinamentos adicionais e observações específicas.
+<br>
+    
 ...
 
 **5.5. Deletar uma avaliação**
