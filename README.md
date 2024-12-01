@@ -1,4 +1,4 @@
-<h1>Chat Softex</h1>
+# Chat Softex
 
 <p align="center"> 
 <img src="https://img.shields.io/static/v1?label=Python&message=3.x&color=3776AB&style=for-the-badge&logo=python"/> 
@@ -39,7 +39,6 @@
 
 ---
 
-
 ## Arquitetura do Backend :triangular_ruler: :straight_ruler:
 
 **Diagrama:**
@@ -47,7 +46,6 @@
 <img src="https://github.com/chat-softex/.github/blob/main/profile/diagrama_arquitetura_software_gestao_projetos_inovacao.drawio.png" alt="Diagrama de Arquitetura de Software">
 
 --- 
-
 
 ```plaintext
 sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
@@ -748,7 +746,6 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
     - **Avaliadores autenticados:** Requer um token JWT válido com permissões para avaliadores, usuários do tipo avaliador.
     - **Administradores autenticados:** Requer um token JWT válido com permissões administrativas, usuários do tipo administrador.
 
-
 ---
 
 ## Configuração e Instalação :gear:
@@ -801,7 +798,6 @@ $ flask db upgrade
 
 ```
 
-
 ---
 
 ### Executar app :arrow_forward:
@@ -823,4 +819,4 @@ Running on http://127.0.0.1:5000/
 
 The [MIT License]() (MIT)
 
-Copyright :copyright: 2024 - Chat Softex
+Copyright :copyright: 2024 - ChatSoftex
