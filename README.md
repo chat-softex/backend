@@ -1,4 +1,4 @@
-<h1>Chat Softex</h1>
+# Chat Softex
 
 <p align="center"> 
 <img src="https://img.shields.io/static/v1?label=Python&message=3.x&color=3776AB&style=for-the-badge&logo=python"/> 
@@ -39,7 +39,6 @@
 
 ---
 
-
 ## Arquitetura do Backend :triangular_ruler: :straight_ruler:
 
 **Diagrama:**
@@ -47,7 +46,6 @@
 <img src="https://github.com/chat-softex/.github/blob/main/profile/diagrama_arquitetura_software_gestao_projetos_inovacao.drawio.png" alt="Diagrama de Arquitetura de Software">
 
 --- 
-
 
 ```plaintext
 sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
@@ -650,9 +648,9 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 
 ...
 
-**5.3. Criar uma nova avaliação**
+**5.3. Criar uma nova avaliação utilizando IA**
   - **Rota:** ```POST /reviews```
-  - **Descrição:** Cria uma nova avaliação.
+  - **Descrição:** Cria uma nova avaliação automaticamente utilizando inteligência artificial (API do ChatGPT) e critérios padronizados com base na Lei do Bem.
   - **Permissão:** Avaliadores autenticados.
   - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
   - **Requisição:**
@@ -662,8 +660,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
     ```
     JSON
         {
-            "projeto_id": "789e1234-f89b-12d3-a456-426614174000",
-            "feedback_qualitativo": "Ótimo trabalho!"
+            "projeto_id": "789e1234-f89b-12d3-a456-426614174000"
         }
     ```
 
@@ -676,16 +673,21 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
         {
             "id": "123e4567-f89b-12d3-a456-426614174000",
             "projeto_id": "789e1234-f89b-12d3-a456-426614174000",
-            "feedback_qualitativo": "Ótimo trabalho!",
+            "feedback_qualitativo": "O projeto apresenta um alto grau de inovação e alinhamento com os critérios da Lei do Bem.",
             "data_avaliacao": "2024-11-24T11:00:00Z"
         }
-    ```
+    ```    
+<br>
+
+> [!Note]\
+> A rota `POST /reviews` utiliza a API ChatGPT para análise automática, aplicando critérios pré-definidos com base na Lei do Bem, fornecendo um feedback inicial de alta qualidade e eficiência.
+<br>
 
 ...
 
-**5.4. Atualizar uma avaliação**
+**5.4. Atualizar uma avaliação manualmente**
   - **Rota:** ```PUT /reviews/{id}```
-  - **Descrição:** Atualiza os dados de uma avaliação pelo ID.
+  - **Descrição:** Permite ao avaliador atualizar manualmente uma avaliação previamente realizada. Atualiza os dados de uma avaliação pelo ID.
   - **Permissão:** Avaliadores autenticados.
   - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
   - **Requisição:**
@@ -695,7 +697,8 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
     ```
     JSON
         {
-            "feedback_qualitativo": "Trabalho excelente!"
+            "feedback_qualitativo": "O projeto apresenta um alto grau de inovação e alinhamento com os critérios da Lei do Bem. 
+            Apresenta oportunidades de melhoria em viabilidade técnica."
         }
     ```    
 
@@ -708,11 +711,17 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
         {
             "id": "123e4567-f89b-12d3-a456-426614174000",
             "projeto_id": "789e1234-f89b-12d3-a456-426614174000",
-            "feedback_qualitativo": "Trabalho excelente!",
+            "feedback_qualitativo": "O projeto apresenta um alto grau de inovação e alinhamento com os critérios da Lei do Bem. 
+            Apresenta oportunidades de melhoria em viabilidade técnica.",
             "data_avaliacao": "2024-11-24T11:00:00Z"
         }
     ```    
+<br>
 
+> [!Note]\
+> A rota `PUT /reviews/{id}` é destinada a ajustes manuais feitos pelo avaliador, garantindo flexibilidade para refinamentos adicionais e observações específicas.
+<br>
+    
 ...
 
 **5.5. Deletar uma avaliação**
@@ -737,7 +746,6 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
     - **Avaliadores autenticados:** Requer um token JWT válido com permissões para avaliadores, usuários do tipo avaliador.
     - **Administradores autenticados:** Requer um token JWT válido com permissões administrativas, usuários do tipo administrador.
 
-
 ---
 
 ## Configuração e Instalação :gear:
@@ -754,7 +762,7 @@ $ python -m venv venv
 $ source venv/bin/activate
 ```
 
-**Ativar ambiente virtual -Windows:**
+**Ativar ambiente virtual - Windows:**
 ```bash
 $ venv\Scripts\activate 
 ```
@@ -790,7 +798,6 @@ $ flask db upgrade
 
 ```
 
-
 ---
 
 ### Executar app :arrow_forward:
@@ -812,4 +819,4 @@ Running on http://127.0.0.1:5000/
 
 The [MIT License]() (MIT)
 
-Copyright :copyright: 2024 - Chat Softex
+Copyright :copyright: 2024 - ChatSoftex
