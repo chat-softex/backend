@@ -43,7 +43,7 @@
 
 **Diagrama:**
 
-<img src="https://github.com/chat-softex/.github/blob/main/profile/diagrama_arquitetura_software_gestao_projetos_inovacao.drawio.png" alt="Diagrama de Arquitetura de Software">
+<img src="https://github.com/chat-softex/.github/blob/main/doc/diagrama_arquitetura_software_ChatSoftex.drawio.png" alt="Diagrama de Arquitetura de Software">
 
 --- 
 
