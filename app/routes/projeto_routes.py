@@ -1,4 +1,3 @@
-# app/routes/projeto_routes.py:
 from flask import Blueprint
 from app.controllers.projeto_controller import ProjectController
 from app.middlewares.auth import jwt_required, avaliador_required

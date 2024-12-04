@@ -1,4 +1,3 @@
-# app/utils/jwt_manager.py:
 import jwt
 import os
 import logging
@@ -23,7 +22,6 @@ class JWTManager:
         try:
             payload = jwt.decode(token, JWTManager.SECRET_KEY, algorithms=['HS256'])
             expiration = datetime.fromtimestamp(payload['exp'])
-            # reemissão de token se a expiração estiver próxima
             if (expiration - datetime.utcnow()).total_seconds() < JWTManager.RENEWAL_THRESHOLD * 60:
                 new_token = JWTManager.create_token(payload['data'])
                 payload['new_token'] = new_token

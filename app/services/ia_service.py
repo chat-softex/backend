@@ -1,4 +1,3 @@
-# app/service/ia_service.py:
 import openai
 import requests
 from io import BytesIO
@@ -46,21 +45,18 @@ class IaService:
             logger.warning(f"Projeto com ID {project_id} não encontrado.")
             raise NotFoundError("Projeto", "Projeto não encontrado")
         
-        # Verifica se `projeto.arquivo` é uma URL válida
         if not projeto.arquivo or not isinstance(projeto.arquivo, str):
             logger.error(f"O caminho do arquivo é inválido para o projeto {project_id}.")
             raise ValidationError("arquivo", "Caminho do arquivo inválido.")
         
         try:
-            # Faz o download do arquivo
             response = requests.get(projeto.arquivo)
             if response.status_code != 200:
                 logger.error(f"Erro ao baixar o arquivo: {response.status_code}")
                 raise ValidationError("arquivo", "Não foi possível baixar o arquivo do projeto.")
 
-            file_content = BytesIO(response.content)  # Converte para BytesIO
+            file_content = BytesIO(response.content)  
 
-            # Determina o tipo do arquivo
             if projeto.arquivo.endswith('.pdf'):
                 file_type = "pdf"
             elif projeto.arquivo.endswith(('.doc', '.docx')):
@@ -69,7 +65,6 @@ class IaService:
                 logger.error(f"Tipo de arquivo não suportado: {projeto.arquivo}")
                 raise ValidationError("arquivo", "Tipo de arquivo não suportado para análise.")
             
-            # Extrai texto utilizando o TextExtractor
             texto = TextExtractor.extract_text(file_content.read(), file_type)
 
             if not texto.strip():
@@ -83,7 +78,7 @@ class IaService:
             logger.error(f"Erro ao acessar o arquivo do projeto: {e}")
             raise ValidationError("arquivo", "Erro ao acessar o arquivo do projeto.")
         except ValidationError:
-            raise  # Propaga erros de validação
+            raise  
         except Exception as e:
             logger.error(f"Erro ao processar o arquivo do projeto {project_id}: {e}")
             raise InternalServerError("Erro ao processar o arquivo do projeto.")

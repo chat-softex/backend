@@ -1,4 +1,3 @@
-# app/controllers/projeto_controller.py:
 import logging
 from flask import request, jsonify
 from app.services.projeto_service import ProjectService
@@ -20,6 +19,7 @@ class ProjectController:
             logger.error("Erro inesperado ao listar projetos.", exc_info=True)
             return ErrorHandler.handle_generic_exception(e)
 
+
     @staticmethod
     def get_by_id(id):
         try:
@@ -36,6 +36,7 @@ class ProjectController:
         except Exception as e:
             logger.error(f"Erro inesperado ao buscar projeto {id}.", exc_info=True)
             return ErrorHandler.handle_generic_exception(e)
+
 
     @staticmethod
     def create():
@@ -60,6 +61,7 @@ class ProjectController:
         except Exception as e:
             logger.error("Erro inesperado ao criar projeto.", exc_info=True)
             return ErrorHandler.handle_generic_exception(e)
+
 
     @staticmethod
     def update(id):
@@ -88,6 +90,7 @@ class ProjectController:
             logger.error(f"Erro inesperado ao atualizar projeto {id}.", exc_info=True)
             return ErrorHandler.handle_generic_exception(e)
 
+
     @staticmethod
     def delete(id):
         try:
@@ -104,6 +107,7 @@ class ProjectController:
         except Exception as e:
             logger.error(f"Erro inesperado ao deletar projeto {id}.", exc_info=True)
             return ErrorHandler.handle_generic_exception(e)
+
 
     @staticmethod
     def update_status(id):

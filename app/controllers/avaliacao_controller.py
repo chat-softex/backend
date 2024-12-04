@@ -1,4 +1,3 @@
-# app/controllers/avaliacao_controller.py:
 import logging
 from flask import request, jsonify
 from app.services.avaliacao_service import ReviewService
@@ -90,7 +89,7 @@ class ReviewController:
                 )
             ReviewService().delete(str(id))
             logger.info(f"Avaliação {id} deletada com sucesso.")
-            return '', 204  # sem corpo de resposta
+            return '', 204  
         except ValidationError as e:
             return ErrorHandler.handle_validation_error(e)
         except NotFoundError as e:

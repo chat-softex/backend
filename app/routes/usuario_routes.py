@@ -1,4 +1,3 @@
-# app/routes/usuario_routes.py:
 from flask import Blueprint
 from app.controllers.usuario_controller import UserController
 from app.middlewares.auth import jwt_required, admin_required

@@ -1,4 +1,3 @@
-# app/service/usuario_service.py:
 import logging
 import marshmallow
 from app.repositories.usuario_repository import UserRepository
@@ -8,7 +7,6 @@ from app.utils.jwt_manager import JWTManager
 from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError, ValidationError
 from app.erros.error_handler import ErrorHandler
 
-# Configuração do logger
 logger = logging.getLogger(__name__)
 
 class UserService:
@@ -65,7 +63,6 @@ class UserService:
         
             normalized_data = self._normalize_data(data)
 
-            # checa duplicidade de e-mail
             if UserRepository.get_by_email(normalized_data['email']):
                 logger.warning("Tentativa de criação com e-mail já cadastrado.")
                 raise ConflictError(resource="E-mail", message="E-mail já está cadastrado.")
@@ -92,27 +89,22 @@ class UserService:
     def update(self, user_id, data):
         """Atualiza os dados de um usuário."""
         try: 
-            # validações iniciais
             if not user_id or not isinstance(user_id, str):
                 raise ValidationError(field="user_id", message="ID inválido.")
             if not data or not isinstance(data, dict):
                 raise ValidationError(field="data", message="Dados inválidos para atualização.")
                 
-            # busca o usuário pelo ID para verificar se existe
             usuario = UserRepository.get_by_id(user_id)
             if not usuario:
                 logger.warning(f"Usuário com ID {user_id} não encontrado.")
                 raise NotFoundError(resource="Usuário", message="Usuário não encontrado.")
 
-            # normaliza os dados
             normalized_data = self._normalize_data(data)
             
-
             if 'email' in normalized_data and normalized_data['email'] != usuario.email:
                 if UserRepository.get_by_email(normalized_data['email']):
                     logger.warning(f"E-mail {normalized_data['email']} já em uso.")
                     raise ConflictError(resource="E-mail", message="E-mail já está cadastrado.")
-
 
             try:
                 updated_data = self.schema.load(normalized_data, partial=True)
@@ -130,19 +122,15 @@ class UserService:
             return updated_usuario
         
         except NotFoundError as e:
-            # repropaga o erro específico para tratamento externo
             logger.warning(f"[NotFoundError] {e}")
             raise
         except ConflictError as e:
-            # repropaga conflitos de dados
             logger.warning(f"[ConflictError] {e}")
             raise
         except ValidationError as err:
-             # tratamento para erros de validação
             logger.warning(f"[ValidationError] {err.message}")
             raise 
         except Exception as e:
-            # tratamento de erros genéricos
             logger.error(f"Erro inesperado ao atualizar usuário {user_id}: {e}")
             raise InternalServerError("Erro inesperado ao atualizar usuário.")
 
@@ -150,16 +138,14 @@ class UserService:
     def delete(self, user_id):
         """Remove um usuário pelo ID."""
         try:
-            if not user_id or not isinstance(user_id, str):  # validação preliminar
+            if not user_id or not isinstance(user_id, str):  
                 raise ValidationError(field="user_id", message="ID inválido.")
 
-            # busca o usuário pelo ID para verificar se existe
             usuario = UserRepository.get_by_id(user_id)
             if not usuario:
                 logger.warning(f"Tentativa de deletar usuário com ID {user_id} não encontrado.")
                 raise NotFoundError(resource="Usuário", message="Usuário não encontrado.")
             
-            # deleta o usuário
             UserRepository.delete(user_id)
             logger.info(f"Usuário {user_id} deletado com sucesso.")
             return {"message": "Usuário deletado com sucesso."}

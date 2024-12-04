@@ -1,4 +1,3 @@
-# app/controllers/empresa_controller.py:
 import logging
 from flask import request, jsonify
 from app.services.empresa_service import CompanyService
@@ -37,6 +36,7 @@ class CompanyController:
             logger.error(f"Erro inesperado ao buscar empresa {id}.", exc_info=True)
             return ErrorHandler.handle_generic_exception(e)
 
+
     @staticmethod
     def create():
         try:
@@ -55,6 +55,7 @@ class CompanyController:
         except Exception as e:
             logger.error("Erro inesperado ao criar empresa.", exc_info=True)
             return ErrorHandler.handle_generic_exception(e)
+
 
     @staticmethod
     def update(id):
@@ -79,6 +80,7 @@ class CompanyController:
         except Exception as e:
             logger.error(f"Erro inesperado ao atualizar empresa {id}.", exc_info=True)
             return ErrorHandler.handle_generic_exception(e)
+
 
     @staticmethod
     def delete(id):

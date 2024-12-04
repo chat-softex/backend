@@ -1,11 +1,9 @@
-# app/repositories/empresa_repository.py
 import logging
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from app.models.empresa_model import Company
 from app import db
 from app.erros.custom_errors import NotFoundError, InternalServerError, ConflictError
 
-# Configuração do logger
 logger = logging.getLogger("CompanyRepository")
 
 class CompanyRepository:
@@ -52,6 +50,7 @@ class CompanyRepository:
             raise InternalServerError(message="Erro ao buscar empresa pelo CNPJ.")
         
 
+    # Retorna a empresa específica pelo Email.
     @staticmethod
     def get_by_email(email):
         try:

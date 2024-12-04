@@ -1,4 +1,3 @@
-# app/repositories/projeto_repository.py:
 import logging
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import joinedload
@@ -6,7 +5,6 @@ from app.models.projeto_model import Project
 from app import db
 from app.erros.custom_errors import NotFoundError, InternalServerError, ConflictError
 
-# Configuração do logger
 logger = logging.getLogger("ProjectRepository")
 
 class ProjectRepository:

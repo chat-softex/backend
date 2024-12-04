@@ -1,4 +1,3 @@
-# app/controllers/usuario_controller.py:
 import logging
 from flask import request, jsonify
 from app.services.usuario_service import UserService
@@ -36,9 +35,7 @@ class UserController:
         except Exception as e:
             logger.error(f"Erro inesperado ao buscar usuário {id}.", exc_info=True)
             return ErrorHandler.handle_generic_exception(e)
-        
-        
-        
+                
 
     @staticmethod
     def create():
@@ -56,6 +53,7 @@ class UserController:
         except Exception as e:
             logger.error("Erro inesperado ao criar usuário.", exc_info=True)
             return ErrorHandler.handle_generic_exception(e)
+
 
     @staticmethod
     def update(id):
@@ -81,6 +79,7 @@ class UserController:
             logger.error(f"Erro inesperado ao atualizar usuário {id}.", exc_info=True)
             return ErrorHandler.handle_generic_exception(e)
 
+
     @staticmethod
     def delete(id):
         try:
@@ -89,9 +88,9 @@ class UserController:
                     ValidationError(field="id", message="ID inválido.")
                 )
             
-            UserService().delete(str(id))  # converte para string
+            UserService().delete(str(id))  
             logger.info(f"Usuário {id} deletado com sucesso.")
-            return '', 204  # sem corpo de resposta
+            return '', 204  
         except ValidationError as e:
             return ErrorHandler.handle_validation_error(e)
         except NotFoundError as e:

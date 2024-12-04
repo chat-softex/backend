@@ -1,4 +1,3 @@
-# app/service/empresa_service.py:
 import logging
 import marshmallow
 from app.repositories.empresa_repository import CompanyRepository 
@@ -7,7 +6,6 @@ from app.erros.custom_errors import NotFoundError, ConflictError, InternalServer
 from validate_docbr import CNPJ as CNPJValidator
 from app.erros.error_handler import ErrorHandler
 
-# Configuração do logger
 logger = logging.getLogger(__name__)
 
 class CompanyService:
@@ -64,7 +62,6 @@ class CompanyService:
 
             normalized_data = self._normalize_data(data)            
 
-            # verifica se o CNPJ ou e-mail já estão cadastrados
             if CompanyRepository.get_by_cnpj(normalized_data['cnpj']):
                 logger.warning(f"CNPJ já cadastrado: {normalized_data['cnpj']}")
                 raise ConflictError(resource="Empresa", message="CNPJ já cadastrado.")
@@ -72,13 +69,11 @@ class CompanyService:
                 logger.warning(f"E-mail já cadastrado: {normalized_data['email']}")
                 raise ConflictError(resource="Empresa", message="E-mail já cadastrado.")
 
-            # valida os dados com o schema
             try:
                 empresa_data = self.schema.load(normalized_data)
             except marshmallow.exceptions.ValidationError as marshmallow_error:
                 ErrorHandler.handle_marshmallow_errors(marshmallow_error.messages)
 
-            # cria a empresa no banco de dados
             empresa = CompanyRepository.create(empresa_data)
             logger.info(f"Empresa criada com sucesso: ID {empresa.id}")
             return empresa
@@ -104,46 +99,37 @@ class CompanyService:
                 logger.warning(f"Empresa com ID {company_id} não encontrada.")
                 raise NotFoundError(resource="Empresa", message="Empresa não encontrada.")
 
-            # normaliza os dados
             updated_data = self._normalize_data(data)
 
-            # se o CNPJ foi alterado, valida e verifica se já está cadastrado
             if 'cnpj' in updated_data and updated_data['cnpj'] != empresa.cnpj:
                 if CompanyRepository.get_by_cnpj(updated_data['cnpj']):
                     logger.warning(f"CNPJ já cadastrado: {updated_data['cnpj']}")
                     raise ConflictError(resource="Empresa", message="CNPJ já cadastrado.")
 
-            # se o e-mail foi alterado, verifica se já está cadastrado
             if 'email' in updated_data and updated_data['email'] != empresa.email:
                 if CompanyRepository.get_by_email(updated_data['email']):
                     logger.warning(f"E-mail já cadastrado: {updated_data['email']}")
                     raise ConflictError(resource="Empresa", message="E-mail já cadastrado.")
 
-            # valida os dados com o schema
             try:
                 updated_data = self.schema.load(updated_data, partial=True)
             except marshmallow.exceptions.ValidationError as marshmallow_error:
                 ErrorHandler.handle_marshmallow_errors(marshmallow_error.messages)    
                 
 
-            # atualiza os atributos da empresa
             for key, value in updated_data.items():
                 setattr(empresa, key, value)
 
-            # salva a atualização no repositório
             updated_empresa = CompanyRepository.update(empresa)
             logger.info(f"Empresa com ID {company_id} atualizada com sucesso.")
             return updated_empresa
         except NotFoundError as e:
-            # repropaga o erro específico para tratamento externo
             logger.warning(f"[NotFoundError] {e}")
             raise
         except ConflictError as e:
-            # repropaga conflitos de dados
             logger.warning(f"[ConflictError] {e}")
             raise
         except ValidationError as err:
-             # tratamento para erros de validação
             logger.warning(f"[ValidationError] {err.message}")
             raise 
         except Exception as e:

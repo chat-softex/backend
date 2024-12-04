@@ -1,8 +1,6 @@
-# app/validators/avaliacao_validator.py:
 from marshmallow import Schema, fields, validate, validates, validates_schema
 from app.erros.custom_errors import ValidationError
 
-# Schema de validação de Avaliação
 class ReviewSchema(Schema):
     """Schema de validação para Avaliações."""
     projeto_id = fields.Str(

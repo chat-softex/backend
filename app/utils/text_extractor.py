@@ -1,4 +1,3 @@
-# app/utils/text_extractor.py:
 import PyPDF2
 import pdfplumber
 from io import BytesIO
@@ -25,7 +24,6 @@ class TextExtractor:
         try:
             text = extractor(file_content)
 
-            # Fallback para PyPDF2 no caso de PDFs
             if file_type == "pdf" and not text.strip():
                 logger.warning("pdfplumber não conseguiu extrair texto. Tentando com PyPDF2.")
                 text = TextExtractor._extract_text_with_pypdf2(file_content)
@@ -55,7 +53,7 @@ class TextExtractor:
             return text
         except Exception as e:
             logger.error(f"Erro ao usar pdfplumber para extrair texto: {e}")
-            return ""  # Retorna string vazia caso pdfplumber falhe
+            return ""  
 
     @staticmethod
     def _extract_text_with_pypdf2(file_content):
@@ -70,7 +68,7 @@ class TextExtractor:
             return text
         except Exception as e:
             logger.error(f"Erro ao usar PyPDF2 para extrair texto: {e}")
-            return ""  # Retorna string vazia caso PyPDF2 falhe
+            return ""  
 
     @staticmethod
     def _extract_text_with_docx(file_content):
@@ -80,4 +78,4 @@ class TextExtractor:
             return "\n".join(paragraph.text for paragraph in doc.paragraphs if paragraph.text.strip())
         except Exception as e:
             logger.error(f"Erro ao usar docx para extrair texto: {e}")
-            return ""  # Retorna string vazia caso falhe
+            return ""  

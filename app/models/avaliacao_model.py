@@ -1,4 +1,3 @@
-# app/models/avaliacao_model.py
 from app import db
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import ForeignKey
@@ -32,7 +31,7 @@ class Review(db.Model):
             "projeto": {
                 "id": str(self.projeto.id),
                 "titulo_projeto": self.projeto.titulo_projeto
-            } if self.projeto else None  # incluii os detalhes do projeto (se disponível)
+            } if self.projeto else None  # inclui os detalhes do projeto (se disponível)
         }
 
 

@@ -1,14 +1,11 @@
-# app/service/firebase_service.py:
 import firebase_admin
 from firebase_admin import credentials, storage, exceptions
 import os
 import logging
 from app.erros.custom_errors import InternalServerError, ExternalAPIError
 
-# Configuração de logging
 logger = logging.getLogger(__name__)
 
-# Inicializa o aplicativo Firebase com as credenciais e o bucket configurados no .env
 cred = credentials.Certificate(os.getenv('FIREBASE_CONFIG'))
 firebase_admin.initialize_app(cred, {'storageBucket': os.getenv('STORAGE_BUCKET')})
 
@@ -23,7 +20,7 @@ class FirebaseService:
 
             blob = bucket.blob(file_name)
             blob.upload_from_filename(file_path)
-            blob.make_public()  # Torna o arquivo público
+            blob.make_public()  
             logger.info(f"Arquivo '{file_name}' enviado com sucesso. URL: {blob.public_url}")
             return blob.public_url
 

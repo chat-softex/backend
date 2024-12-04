@@ -1,4 +1,3 @@
-# app/utils/file_utils.py:
 import tempfile
 import os
 import re
@@ -16,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class FileUtils:
-    MAX_CHARACTERS = 25000  # Limite de caracteres
+    MAX_CHARACTERS = 25000  # limite de caracteres
     SENSITIVE_PATTERNS = {
         "CNPJ": r"(?i)\b(?:CNPJ[: ]*)?(\d{2}[.\s]?\d{3}[.\s]?\d{3}[\/\s]?\d{4}[-.\s]?\d{2})\b",
         "CPF": r"(?i)\b(?:cpf[\s:.]*)?(\d{3}[\s.-]?\d{3}[\s.-]?\d{3}[\s.-]?\d{2})\b",
@@ -52,7 +51,7 @@ class FileUtils:
             for label, pattern in self.SENSITIVE_PATTERNS.items():
                 matches = re.findall(pattern, text, flags=re.IGNORECASE)
                 if matches:
-                    # Validação adicional para CPFs e CNPJs
+                    # validação adicional para CPFs e CNPJs
                     if label == "CPF":
                         valid_cpfs = [cpf for cpf in matches if self._validate_cpf(cpf)]
                         if valid_cpfs:
@@ -99,7 +98,6 @@ class FileUtils:
             if extension not in {"pdf", "docx"}:
                 raise ValidationError(field="arquivo", message="Formato de arquivo não permitido.")
 
-            # Determina o tipo de arquivo para TextExtractor
             text = TextExtractor.extract_text(file.read(), extension)
             logger.info(f"Texto extraído do documento: {text}")
             self._validate_text(text)
@@ -122,7 +120,7 @@ class FileUtils:
         temp_file_path = None
         try:
             with tempfile.NamedTemporaryFile(delete=False, suffix=f"_{filename}") as temp_file:
-                temp_file.write(file.read())  # Salva o conteúdo no arquivo temporário
+                temp_file.write(file.read())  
                 temp_file_path = temp_file.name
             
             public_url = FirebaseService.upload_file(temp_file_path, filename)
@@ -139,7 +137,7 @@ class FileUtils:
 
         finally:
             if temp_file_path and os.path.exists(temp_file_path):
-                os.remove(temp_file_path)  # Remove o arquivo temporário
+                os.remove(temp_file_path)  
                 logger.info(f"Arquivo temporário {temp_file_path} removido.")
 
 

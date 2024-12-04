@@ -1,4 +1,3 @@
-# app/routes/avaliacao_routes.py:
 from flask import Blueprint
 from app.controllers.avaliacao_controller import ReviewController
 from app.middlewares.auth import jwt_required, avaliador_required

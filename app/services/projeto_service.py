@@ -1,4 +1,3 @@
-# app/service/projeto_service.py:
 import logging
 import marshmallow
 from app.repositories.projeto_repository import ProjectRepository
@@ -7,7 +6,6 @@ from app.validators.projeto_validator import ProjectSchema
 from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError, ValidationError, ExternalAPIError
 from app.erros.error_handler import ErrorHandler
 
-# Configuração do logger
 logger = logging.getLogger(__name__)
 
 class ProjectService:
@@ -69,11 +67,9 @@ class ProjectService:
             if not file or not self._is_allowed_file(file.filename):
                 raise ValidationError(field="arquivo", message="Somente arquivos PDF, DOC e DOCX são permitidos.")
 
-            # Valida o conteúdo do arquivo com if explícito
             if not self.file_utils.is_valid_document(file, file.filename):
                 logger.warning("Documento contém dados sensíveis.")
                 raise ValidationError(field="arquivo", message="Documento contém dados sensíveis.")
-
 
             try:
                 file_url = self.file_utils.upload_to_firebase(file, file.filename)
@@ -84,7 +80,6 @@ class ProjectService:
             data['arquivo'] = file_url
 
             normalized_data = self._normalize_data(data)
-
 
             try:
                 projeto_data = self.schema.load(normalized_data)
@@ -119,8 +114,6 @@ class ProjectService:
                 if not self._is_allowed_file(file.filename):
                     raise ValidationError(field="arquivo", message="Somente arquivos PDF, DOC e DOCX são permitidos.")
 
-                
-                # Valida o conteúdo do arquivo com if explícito
                 if not self.file_utils.is_valid_document(file, file.filename):
                     logger.warning("Documento contém dados sensíveis.")
                     raise ValidationError(field="arquivo", message="Documento contém dados sensíveis.")
@@ -131,12 +124,9 @@ class ProjectService:
                     logger.error(f"Erro ao utilizar Firebase: {api_error.message}")
                     raise
 
-                # file_url = self.file_utils.upload_to_firebase(file, file.filename)
                 data = data or {}
                 data['arquivo'] = file_url
-
                 
-            # Tratamento de dados fornecidos
             if data:
                 normalized_data = self._normalize_data(data)
                 try:
@@ -144,10 +134,8 @@ class ProjectService:
                 except marshmallow.exceptions.ValidationError as marshmallow_error:
                     ErrorHandler.handle_marshmallow_errors(marshmallow_error.messages)
 
-                # Atualização dos atributos do projeto
                 for key, value in projeto_data.items():
                     setattr(projeto, key, value)    
-
 
             updated_projeto = ProjectRepository.update(projeto)
             logger.info(f"Projeto {project_id} atualizado com sucesso.")
@@ -165,6 +153,7 @@ class ProjectService:
         except Exception as e:
             logger.error(f"Erro inesperado ao atualizar projeto {project_id}: {e}")
             raise InternalServerError("Erro ao atualizar projeto.")
+
 
     def update_status(self, project_id, novo_status):
         try:

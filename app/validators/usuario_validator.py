@@ -1,8 +1,6 @@
-# app/validators/usuario_validator.py:
 from marshmallow import Schema, fields, validate, validates, validates_schema
 from app.erros.custom_errors import ValidationError
 
-# Schema de validação de Usuario
 class UserSchema(Schema):
     nome = fields.String(
         required=True,

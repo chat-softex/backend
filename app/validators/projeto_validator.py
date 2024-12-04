@@ -1,4 +1,3 @@
-# app/validators/projeto_validator.py:
 from marshmallow import Schema, fields, validate, validates, validates_schema
 from app.erros.custom_errors import ValidationError
 

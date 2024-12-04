@@ -1,4 +1,3 @@
-# app/middlewares/auth.py:
 import logging
 from flask import request, jsonify, g
 from functools import wraps
@@ -7,7 +6,6 @@ from app.repositories.usuario_repository import UserRepository
 from app.erros.custom_errors import UnauthorizedError, InvalidTokenError
 from app.erros.error_handler import ErrorHandler
 
-# Configuração do logger
 logger = logging.getLogger(__name__)
 
 def jwt_required(f):
@@ -20,7 +18,6 @@ def jwt_required(f):
             return ErrorHandler.handle_unauthorized_error(UnauthorizedError("Token é obrigatório"))
 
         try:
-            # verificar se o token tem o prefixo 'Bearer'
             parts = token.split()
             if len(parts) == 2 and parts[0].lower() == "bearer":
                 token = parts[1]
@@ -34,7 +31,6 @@ def jwt_required(f):
                 logger.warning("Usuário não encontrado para o token fornecido.")
                 raise UnauthorizedError("Usuário não encontrado.")
                 
-            # adiciona o novo token ao header da resposta se próximo de expirar
             if 'new_token' in token_data:
                 g.new_token = token_data['new_token']
                 

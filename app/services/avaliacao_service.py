@@ -1,4 +1,3 @@
-# app/service/avaliacao_service.py
 import logging
 import marshmallow
 from app.repositories.avaliacao_repository import ReviewRepository
@@ -7,7 +6,6 @@ from app.services.projeto_service import ProjectService
 from app.validators.avaliacao_validator import ReviewSchema
 from app.erros.custom_errors import NotFoundError, ConflictError, InternalServerError, ValidationError, ExternalAPIError
 from app.erros.error_handler import ErrorHandler
-
 import uuid
 from app.services.ia_service import IaService 
 
@@ -54,10 +52,8 @@ class ReviewService:
         try:
             logger.info(f"Dados recebidos para criar avaliação: {data}")
 
-            # verificar se o projeto_id é fornecido
             projeto_id = data.get("projeto_id")
 
-        
             if not projeto_id or not isinstance(projeto_id, str):
                 raise ValidationError(field="projeto_id", message="ID inválido.")
             
@@ -67,31 +63,24 @@ class ReviewService:
                 logger.warning(f"Projeto não encontrado para ID: {projeto_id}")
                 raise NotFoundError(resource="Projeto", message="Projeto não encontrado.")
 
-            # verifica se o projeto já foi avaliado
             if projeto.avaliacao:
                 logger.warning(f"Projeto {projeto_id} já possui uma avaliação.")
                 raise ConflictError(resource="Projeto", message="O projeto já possui uma avaliação.")
 
-            # realiza análise usando IaService
             projeto_texto = self.ia_service.obter_texto_projeto(projeto.id)
-            # feedback_qualitativo = self.ia_service.enviar_para_analise(projeto_texto)
             try:
                 feedback_qualitativo = self.ia_service.enviar_para_analise(projeto_texto)
             except ExternalAPIError as api_error:
                 logger.error(f"Erro ao utilizar a API da OpenAI: {api_error.message}")
                 raise
 
-
-            # adiciona o feedback ao dicionário de dados
             data['feedback_qualitativo'] = feedback_qualitativo
 
-            # validação final com todos os campos presentes
             try:
                 avaliacao_data = self.schema.load(data)
             except marshmallow.exceptions.ValidationError as marshmallow_error:
                 ErrorHandler.handle_marshmallow_errors(marshmallow_error.messages)
 
-            # persiste no banco via repositório
             avaliacao = ReviewRepository.create(avaliacao_data)
             logger.info(f"Avaliação criada com sucesso para o projeto {projeto.id}.")
             return avaliacao
@@ -138,7 +127,6 @@ class ReviewService:
             return updated_avaliacao
         
         except ValidationError as err:
-             # tratamento para erros de validação
             logger.warning(f"[ValidationError] {err.message}")
             raise 
         except NotFoundError:

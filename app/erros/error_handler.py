@@ -1,12 +1,7 @@
-# app/erros/error_handler.py:
 import logging
 from flask import jsonify
-from .custom_errors import (
-    ValidationError, NotFoundError, UnauthorizedError, ExternalAPIError,
-    ConflictError, InternalServerError, InvalidTokenError
-)
+from .custom_errors import (ValidationError, NotFoundError, UnauthorizedError, ExternalAPIError, ConflictError, InternalServerError, InvalidTokenError)
 
-# Configuração global de logging
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 

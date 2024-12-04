@@ -18,9 +18,8 @@ class Encryption:
 
     def decrypt(self, encrypted_data):
         try:
-            # detecta e converte hexadecimal para bytes
             if isinstance(encrypted_data, str) and encrypted_data.startswith("\\x"):
-                encrypted_data = binascii.unhexlify(encrypted_data[2:])  # remove o prefixo \x e converte para bytes
+                encrypted_data = binascii.unhexlify(encrypted_data[2:])  
 
             return self.cipher.decrypt(encrypted_data).decode()
         except InvalidToken:

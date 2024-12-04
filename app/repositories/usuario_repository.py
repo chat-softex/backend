@@ -1,11 +1,9 @@
-# app/repositories/usuario_repository.py:
 import logging
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from app.models.usuario_model import User
 from app import db
 from app.erros.custom_errors import NotFoundError, InternalServerError, ConflictError
 
-# Configuração do logger
 logger = logging.getLogger("UserRepository")
 
 class UserRepository:

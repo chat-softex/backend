@@ -1,9 +1,7 @@
-# app/validators/empresa_validator.py:
 from marshmallow import Schema, fields, validate, validates, validates_schema
 from app.erros.custom_errors import ValidationError
 from validate_docbr import CNPJ
 
-# Schema de validação de Empresa
 class CompanySchema(Schema):
     """Schema de validação para Empresas."""
     nome_fantasia = fields.String(
@@ -17,7 +15,7 @@ class CompanySchema(Schema):
     )
     cnpj = fields.String(
         required=True,
-        validate=validate.Length(max=18),  # No máximo 18 caracteres, incluindo pontuações
+        validate=validate.Length(max=18),  
         error_messages={
             "required": "O CNPJ é obrigatório.",
             "max": "O CNPJ deve ter no máximo 18 caracteres, incluindo pontuações."

@@ -1,4 +1,3 @@
-# app/models/empresa_model.py
 from app import db
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -35,7 +34,6 @@ class Company(db.Model):
                 for projeto in self.projetos
             ]  # lista de IDs e títulos dos projetos associados
         }
-
 
 
     def __init__(self, nome_fantasia, cnpj, email):

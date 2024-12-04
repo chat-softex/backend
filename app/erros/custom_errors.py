@@ -1,5 +1,3 @@
-# app/erros/custom_errors.py:
-
 class AppError(Exception):
     """Classe base para erros personalizados na aplicação."""
     def __init__(self, message):
