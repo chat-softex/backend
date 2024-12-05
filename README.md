@@ -757,7 +757,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 ## Clonar Repositório :file_folder: :arrow_right: :file_folder:
 
 ```bash
-$ git clone https://github.com/chat-softex/backend.git
+git clone https://github.com/chat-softex/backend.git
 ```
 
 ---
@@ -780,17 +780,17 @@ $ git clone https://github.com/chat-softex/backend.git
 
 **Criar ambiente virtual:**
 ```bash
-$ python -m venv venv
+python -m venv venv
 ```
 
 **Ativar ambiente virtual - MacOS/Linux:**
 ```bash
-$ source venv/bin/activate
+source venv/bin/activate
 ```
 
 **Ativar ambiente virtual - Windows:**
 ```bash
-$ venv\Scripts\activate 
+venv\Scripts\activate 
 ```
 
 ---
@@ -806,7 +806,7 @@ $ venv\Scripts\activate
 ### Instalação das depedências :arrow_down_small:
 
 ```bash
-$ pip install -r requirements.txt
+pip install -r requirements.txt
 
 ```
 
@@ -816,19 +816,19 @@ $ pip install -r requirements.txt
 
 **Inicializar o ambiente de Migration:**
 ```bash
-$ flask db init
+flask db init
 
 ```
 
 **Criar Migration:**
 ```bash
-$ flask db migrate -m "Initial migration"
+flask db migrate -m "Initial migration"
 
 ```
 
 **Aplicar Migration ao banco de dados:**
 ```bash
-$ flask db upgrade
+flask db upgrade
 
 ```
 
@@ -838,7 +838,7 @@ $ flask db upgrade
 
 **development:**
 ```bash
-$ flask run
+flask run
 
 ```
 
