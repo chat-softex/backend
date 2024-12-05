@@ -29,7 +29,13 @@
 
 :small_blue_diamond: [Rotas - EndPoints](#rotas---endpoints-arrows_clockwise)  :heavy_check_mark:
 
+:small_blue_diamond: [Clonar Repositório](#clonar-repositório-file_folder-arrow_right-file_folder) 
+
+:small_blue_diamond: [Contribuições](#contribuições-technologist) 
+
 :small_blue_diamond: [Criar e ativar ambiente virtual](#criar-e-ativar-ambiente-virtual-white_check_mark)
+
+:small_blue_diamond: [Configurar as variáveis de ambiente](#configurar-as-variáveis-de-ambiente-white_check_mark)
 
 :small_blue_diamond: [Instalação das Dependências](#instalação-das-depedências-arrow_down_small)
 
@@ -748,31 +754,59 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 
 ---
 
+## Clonar Repositório :file_folder: :arrow_right: :file_folder:
+
+```bash
+git clone https://github.com/chat-softex/backend.git
+```
+
+---
+
+## Contribuições :technologist:
+
+**Contribuições são bem-vindas! Se você deseja contribuir com melhorias ou correções para o projeto, basta seguir estes passos:**
+
+- Faça um fork do projeto.
+- Crie uma branch para sua nova funcionalidade (git checkout -b feat/nova-funcionalidade).
+- Faça commit das suas alterações (git commit -m 'Adiciona nova funcionalidade').
+- Envie para o repositório remoto (git push origin feat/nova-funcionalidade).
+- Crie um pull request.
+
+---
+
 ## Configuração e Instalação :gear:
 
 ### Criar e ativar ambiente virtual :white_check_mark:
 
 **Criar ambiente virtual:**
 ```bash
-$ python -m venv venv
+python -m venv venv
 ```
 
 **Ativar ambiente virtual - MacOS/Linux:**
 ```bash
-$ source venv/bin/activate
+source venv/bin/activate
 ```
 
 **Ativar ambiente virtual - Windows:**
 ```bash
-$ venv\Scripts\activate 
+venv\Scripts\activate 
 ```
+
+---
+
+### Configurar as variáveis de ambiente :white_check_mark:
+- Altere o arquivo "example.env" para ".env".
+- Preencha as informações relacionadas ao HOTS, PORT, DATABASE, PASSWORD e USERNAME do SGBD.
+- Preencha as informações relacionadas ao nome do BUCKET do Firebase e ao PATH do arquivo JSON contendo as configurações do Firebase.
+- Preencha as informações relacionadas as chaves secretas do SECRET_KEY, JWT_SECRET_KEY, ENCRYPTION_KEY e OPENAI_KEY.
 
 ---
 
 ### Instalação das depedências :arrow_down_small:
 
 ```bash
-$ pip install -r requirements.txt
+pip install -r requirements.txt
 
 ```
 
@@ -782,19 +816,19 @@ $ pip install -r requirements.txt
 
 **Inicializar o ambiente de Migration:**
 ```bash
-$ flask db init
+flask db init
 
 ```
 
 **Criar Migration:**
 ```bash
-$ flask db migrate -m "Initial migration"
+flask db migrate -m "Initial migration"
 
 ```
 
 **Aplicar Migration ao banco de dados:**
 ```bash
-$ flask db upgrade
+flask db upgrade
 
 ```
 
@@ -804,7 +838,7 @@ $ flask db upgrade
 
 **development:**
 ```bash
-$ flask run
+flask run
 
 ```
 
