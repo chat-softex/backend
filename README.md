@@ -29,9 +29,9 @@
 
 :small_blue_diamond: [Rotas - EndPoints](#rotas---endpoints-arrows_clockwise)  :heavy_check_mark:
 
-:small_blue_diamond: [Clonar Repositório](#clonar-repositório-file_folder-arrow_right-file_folder) :heavy_check_mark:
+:small_blue_diamond: [Clonar Repositório](#clonar-repositório-file_folder-arrow_right-file_folder) 
 
-:small_blue_diamond: [Contribuições](#contribuições-technologist) :heavy_check_mark:
+:small_blue_diamond: [Contribuições](#contribuições-technologist) 
 
 :small_blue_diamond: [Criar e ativar ambiente virtual](#criar-e-ativar-ambiente-virtual-white_check_mark)
 
@@ -793,13 +793,13 @@ $ source venv/bin/activate
 $ venv\Scripts\activate 
 ```
 
-...
+---
 
 ### Configurar as variáveis de ambiente :white_check_mark:
 - Altere o arquivo "example.env" para ".env".
-- Preencha as informações referentes ao HOTS, PORT, DATABASE, PASSWORD e USERNAME do SGBD.
-- Preencha as informações referentes ao nome do BUCKET e PATH do arquivo json das configurações do FIREBASE.
-- Preencha as informações referentes as chaves secretas do SECRET_KEY, JWT_SECRET_KEY, ENCRYPTION_KEY e OPENAI_KEY.
+- Preencha as informações relacionadas ao HOTS, PORT, DATABASE, PASSWORD e USERNAME do SGBD.
+- Preencha as informações relacionadas ao nome do BUCKET do Firebase e ao PATH do arquivo JSON contendo as configurações do Firebase.
+- Preencha as informações relacionadas as chaves secretas do SECRET_KEY, JWT_SECRET_KEY, ENCRYPTION_KEY e OPENAI_KEY.
 
 ---
 
