@@ -99,7 +99,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 │   │   └── error_handler.py           # Centraliza o tratamento de erros na aplicação
 |   |
 │   ├── services/                       # Validações das regras de negócio
-│   │   ├── ia_service.py               # Integração com IA (API ChatGPT)
+│   │   ├── ia_service.py               # Integração com IA (API OpenAI - ChatGPT)
 │   │   ├── firebase_service.py         # Configura e implementa o serviço FirebaseService, que interage com o Firebase Storage para upload e download de arquivos.
 |   |   ├── empresa_service.py          # Validações das regras de negócio para empresas
 │   │   ├── projeto_service.py          # Validações das regras de negócio para projetos
@@ -656,7 +656,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 
 **5.3. Criar uma nova avaliação utilizando IA**
   - **Rota:** ```POST /reviews```
-  - **Descrição:** Cria uma nova avaliação automaticamente utilizando inteligência artificial (API do ChatGPT) e critérios padronizados com base na Lei do Bem.
+  - **Descrição:** Cria uma nova avaliação automaticamente utilizando inteligência artificial, API OpenAI (ChatGPT), e critérios padronizados com base na Lei do Bem.
   - **Permissão:** Avaliadores autenticados.
   - **Cabeçalho de Autenticação:** ```Authorization: Bearer <token>```
   - **Requisição:**
@@ -686,7 +686,7 @@ sistema_assistente_de_avaliacao_de_projetos_de_inovacao/
 <br>
 
 > [!Note]\
-> A rota `POST /reviews` utiliza a API ChatGPT para análise automática, aplicando critérios pré-definidos com base na Lei do Bem, fornecendo um feedback inicial de alta qualidade e eficiência.
+> A rota `POST /reviews` utiliza a API OpenAI (ChatGPT) para análise automática, aplicando critérios pré-definidos com base na Lei do Bem, fornecendo um feedback inicial de alta qualidade e eficiência.
 <br>
 
 ...
