@@ -5,8 +5,7 @@
 <img src="https://img.shields.io/static/v1?label=Flask&message=2.x&color=000000&style=for-the-badge&logo=flask"/> 
 <img src="http://img.shields.io/static/v1?label=Draw.io&message=24.6.4&color=f08705&style=for-the-badge&logo=diagramsdotnet"/> 
 <img src="http://img.shields.io/static/v1?label=Firebase&message=10.13.0&color=DD2C00&style=for-the-badge&logo=firebase"/> 
-<img src="http://img.shields.io/static/v1?label=PostgreSQL&message=16&color=4169e1&style=for-the-badge&logo=postgresql&logoColor=f5f5f5"/> 
-<img src="http://img.shields.io/static/v1?label=Workbench%20MySQL&message=8.0.38&color=4479a1&style=for-the-badge&logo=mysql&logoColor=f5f5f5"/> 
+<img src="http://img.shields.io/static/v1?label=PostgreSQL&message=16&color=4169e1&style=for-the-badge&logo=postgresql&logoColor=f5f5f5"/>  
 <img src="http://img.shields.io/static/v1?label=SQLAlchemy&message=2.x&color=2d3748&style=for-the-badge&logo=sqlalchemy"/> 
 <img src="http://img.shields.io/static/v1?label=PyJWT&message=2.x&color=000000&style=for-the-badge&logo=jsonwebtokens"/> 
 <img src="http://img.shields.io/static/v1?label=Cryptography&message=40.0.2&color=2b2b2b&style=for-the-badge&logo=cryptography"/> 
